@@ -1,7 +1,8 @@
 "use client"
 
 import type * as React from "react"
-import { BarChart3, FileText, Settings, Users, Calendar, ChevronDown } from "lucide-react"
+import { BarChart3, FileText, Settings, Users, Calendar, ChevronDown, MessageSquare, BookOpen, User, Heart } from "lucide-react"
+import { LucideIcon } from "lucide-react"
 
 import {
   Sidebar,
@@ -20,7 +21,21 @@ import {
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
-const navigationItems = [
+// Define types for navigation items
+interface SubNavigationItem {
+  title: string
+  url: string
+}
+
+interface NavigationItem {
+  title: string
+  url?: string
+  icon: LucideIcon
+  items?: SubNavigationItem[]
+}
+
+// Counselor navigation items (previously admin)
+const counselorNavigationItems: NavigationItem[] = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -55,14 +70,82 @@ const navigationItems = [
     url: "/settings",
     icon: Settings,
   },
+  {
+    title: "View As",
+    icon: Users,
+    items: [
+      {
+        title: "Student View",
+        url: "/student-view",
+      }
+    ],
+  },
+]
+
+// Student navigation items
+const studentNavigationItems: NavigationItem[] = [
+  {
+    title: "Assessments",
+    url: "/assessments",
+    icon: BookOpen,
+  },
+  {
+    title: "Results",
+    url: "/results",
+    icon: FileText,
+  },
+  {
+    title: "Appointments",
+    url: "/appointments",
+    icon: Calendar,
+  },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageSquare,
+  },
+  {
+    title: "Resources",
+    url: "/resources",
+    icon: BookOpen,
+  },
+  {
+    title: "Wellness",
+    url: "/wellness",
+    icon: Heart,
+  },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: User,
+  }
 ]
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   onNavigate?: (page: string) => void
   currentPage?: string
+  userRole?: string
 }
 
-export function AppSidebar({ onNavigate, currentPage, ...props }: AppSidebarProps) {
+export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...props }: AppSidebarProps) {
+  // Select navigation items based on user role
+  const navigationItems = 
+    userRole === "student" ? studentNavigationItems : counselorNavigationItems
+
+  // Handle navigation based on user role
+  const handleNavigation = (url: string) => {
+    // Remove leading slash if present
+    const path = url.startsWith("/") ? url.substring(1) : url;
+    
+    // For student role, just use the path as is
+    if (userRole === "student") {
+      onNavigate?.(path);
+    } else {
+      // For counselor role, handle the nested paths
+      onNavigate?.(path.replace("/ryff/", "").replace("/", ""));
+    }
+  };
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -74,7 +157,9 @@ export function AppSidebar({ onNavigate, currentPage, ...props }: AppSidebarProp
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-semibold">Ryff PWB</span>
-                <span className="text-xs">Assessment System</span>
+                <span className="text-xs">
+                  {userRole === "student" ? "Student Portal" : "Counselor Portal"}
+                </span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -82,7 +167,9 @@ export function AppSidebar({ onNavigate, currentPage, ...props }: AppSidebarProp
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {userRole === "student" ? "Student Menu" : "Counselor Menu"}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
@@ -102,7 +189,7 @@ export function AppSidebar({ onNavigate, currentPage, ...props }: AppSidebarProp
                             <SidebarMenuSubItem key={subItem.title}>
                               <SidebarMenuSubButton
                                 isActive={currentPage === subItem.url.replace("/ryff/", "").replace("/", "")}
-                                onClick={() => onNavigate?.(subItem.url.replace("/ryff/", "").replace("/", ""))}
+                                onClick={() => handleNavigation(subItem.url)}
                                 className="cursor-pointer"
                               >
                                 {subItem.title}
@@ -114,8 +201,8 @@ export function AppSidebar({ onNavigate, currentPage, ...props }: AppSidebarProp
                     </Collapsible>
                   ) : (
                     <SidebarMenuButton
-                      isActive={currentPage === item.url.replace("/", "")}
-                      onClick={() => onNavigate?.(item.url.replace("/", ""))}
+                      isActive={currentPage === item.url?.replace("/", "")}
+                      onClick={() => item.url && handleNavigation(item.url)}
                       className="cursor-pointer"
                     >
                       <item.icon />
