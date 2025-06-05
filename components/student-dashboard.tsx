@@ -229,25 +229,18 @@ interface StudentDashboardProps {
 }
 
 export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps) {
-  // Map URL paths from sidebar to tab values
+  // Map URL paths to tab values
   const mapUrlToTab = (url: string | undefined) => {
     if (!url) return "assessments";
     
-    // Remove leading slash if present
-    const path = url.startsWith("/") ? url.substring(1) : url;
+    // Handle both old and new URL formats
+    if (url === "assessment" || url === "assessments") return "assessments";
+    if (url === "results") return "results";
+    if (url === "feedback") return "feedback";
     
-    // Map paths to tabs
-    switch (path) {
-      case "assessments": return "assessments";
-      case "results": return "results";
-      case "appointments": return "appointments";
-      case "messages": return "messages";
-      case "resources": return "resources";
-      case "wellness": return "wellness";
-      case "profile": return "profile";
-      default: return "assessments";
-    }
-  };
+    // Default to assessments tab
+    return "assessments";
+  }
   
   const [selectedTab, setSelectedTab] = useState(mapUrlToTab(currentPage));
   const [messageText, setMessageText] = useState("")
@@ -660,13 +653,9 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="assessments">Assessments</TabsTrigger>
+          <TabsTrigger value="assessments">Assessment</TabsTrigger>
           <TabsTrigger value="results">Results</TabsTrigger>
-          <TabsTrigger value="appointments">Appointments</TabsTrigger>
-          <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
-          <TabsTrigger value="wellness">Wellness</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="feedback">AI Feedback</TabsTrigger>
         </TabsList>
         
         <TabsContent value="assessments" className="space-y-4">
@@ -775,607 +764,89 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
           )}
         </TabsContent>
 
-        <TabsContent value="appointments" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Your Appointments</h3>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>Request New Appointment</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Schedule Appointment</DialogTitle>
-                  <DialogDescription>
-                    Request a meeting with your guidance counselor. Please select a date and provide a brief reason for the meeting.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="reason">Reason for appointment</Label>
-                    <Textarea
-                      id="reason"
-                      placeholder="Briefly describe why you'd like to meet..."
-                      value={appointmentReason}
-                      onChange={(e) => setAppointmentReason(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Preferred date</Label>
-                    <Calendar
-                      mode="single"
-                      selected={appointmentDate}
-                      onSelect={setAppointmentDate}
-                      className="rounded-md border"
-                      disabled={(date) => {
-                        // Disable weekends and past dates
-                        const day = date.getDay()
-                        return day === 0 || day === 6 || date < new Date()
-                      }}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit">Request Appointment</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-          
-          {mockAppointments.length > 0 ? (
-            mockAppointments.map((appointment) => (
-              <Card key={appointment.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Meeting with {appointment.counselorName}</CardTitle>
-                    {getStatusBadge(appointment.status)}
-                  </div>
-                  <CardDescription>
-                    {appointment.date} at {appointment.time}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="rounded-md bg-muted p-3">
-                    <h4 className="mb-2 text-sm font-medium">Appointment Details</h4>
-                    <p className="text-sm">
-                      This meeting will take place in the Counseling Center, Room 204. Please arrive 5 minutes early to check in.
-                    </p>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline">Reschedule</Button>
-                  <Button variant="destructive">Cancel</Button>
-                </CardFooter>
-              </Card>
-            ))
-          ) : (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <p className="text-muted-foreground">No upcoming appointments.</p>
-                <Button className="mt-4" onClick={() => setSelectedTab("messages")}>
-                  Message Your Counselor
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="messages" className="space-y-4">
+        <TabsContent value="feedback" className="space-y-4">
+          <h3 className="text-lg font-medium">AI Feedback</h3>
           <Card>
             <CardHeader>
-              <CardTitle>Message Your Counselor</CardTitle>
+              <CardTitle>Personalized AI Analysis</CardTitle>
               <CardDescription>
-                Send a direct message to your assigned guidance counselor.
+                Get personalized feedback on your well-being assessment results
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="rounded-lg border p-4">
-                  <div className="flex items-start gap-4 mb-4">
-                    <Avatar>
-                      <AvatarImage src="/avatars/counselor.png" />
-                      <AvatarFallback>SJ</AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Dr. Sarah Johnson</p>
-                      <div className="rounded-md bg-muted p-3">
-                        <p className="text-sm">
-                          Hello! I noticed you've completed your semester check-in assessment. 
-                          Would you like to schedule a follow-up meeting to discuss your results?
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Yesterday, 2:30 PM</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4 justify-end">
-                    <div className="space-y-1">
-                      <div className="rounded-md bg-primary p-3 text-primary-foreground">
-                        <p className="text-sm">
-                          Yes, I would like to discuss my results. I'm particularly interested in understanding my Environmental Mastery score.
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground text-right">Today, 9:15 AM</p>
-                    </div>
-                    <Avatar>
-                      <AvatarFallback>ME</AvatarFallback>
-                    </Avatar>
-                  </div>
-                  
-                  <div className="flex items-start gap-4 mb-4">
-                    <Avatar>
-                      <AvatarImage src="/avatars/counselor.png" />
-                      <AvatarFallback>SJ</AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Dr. Sarah Johnson</p>
-                      <div className="rounded-md bg-muted p-3">
-                        <p className="text-sm">
-                          Great! I have some availability this Friday at 10:30 AM or next Monday at 2:00 PM. Would either of those times work for you?
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Today, 10:05 AM</p>
-                    </div>
-                  </div>
-                </div>
-                <Textarea
-                  placeholder="Type your message here..."
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  className="min-h-[100px]"
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="justify-between">
-              <Button variant="outline">Attach File</Button>
-              <Button>Send Message</Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="resources" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Well-being Resources</h3>
-            <div className="flex gap-2">
-              <Button 
-                variant={resourceFilter === "all" ? "default" : "outline"} 
-                size="sm" 
-                onClick={() => setResourceFilter("all")}
-              >
-                All
-              </Button>
-              <Button 
-                variant={resourceFilter === "article" ? "default" : "outline"} 
-                size="sm" 
-                onClick={() => setResourceFilter("article")}
-              >
-                Articles
-              </Button>
-              <Button 
-                variant={resourceFilter === "video" ? "default" : "outline"} 
-                size="sm" 
-                onClick={() => setResourceFilter("video")}
-              >
-                Videos
-              </Button>
-              <Button 
-                variant={resourceFilter === "workshop" ? "default" : "outline"} 
-                size="sm" 
-                onClick={() => setResourceFilter("workshop")}
-              >
-                Workshops
-              </Button>
-            </div>
-          </div>
-          
-          <div className="grid gap-4 md:grid-cols-2">
-            {filteredResources.map((resource) => (
-              <Card key={resource.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>{resource.title}</CardTitle>
-                    <Badge variant="outline">{resource.type}</Badge>
-                  </div>
-                  <CardDescription>Source: {resource.source}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {resource.type === "Workshop" && resource.date && (
-                    <p className="text-sm mb-2">Date: {resource.date}</p>
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    {resource.type === "Article" && "Read this article to learn more about psychological well-being concepts and strategies."}
-                    {resource.type === "Video" && "Watch this video for practical demonstrations and expert advice."}
-                    {resource.type === "Worksheet" && "Download this worksheet for guided exercises to improve your well-being."}
-                    {resource.type === "Workshop" && "Attend this workshop to learn and practice well-being techniques with peers."}
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full" asChild>
-                    <a href={resource.link} target="_blank" rel="noopener noreferrer">
-                      {resource.type === "Article" && "Read Article"}
-                      {resource.type === "Video" && "Watch Video"}
-                      {resource.type === "Worksheet" && "Download Worksheet"}
-                      {resource.type === "Workshop" && "Register for Workshop"}
-                    </a>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="wellness" className="space-y-4">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Daily Wellness Tracker</CardTitle>
-                <CardDescription>Track your daily well-being metrics</CardDescription>
-              </CardHeader>
-              <CardContent>
+              {mockResults.length > 0 ? (
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="sleep">Sleep (hours)</Label>
-                      <span className="text-sm">{dailyWellnessData.sleep} hours</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Moon className="h-4 w-4 text-muted-foreground" />
-                      <input
-                        id="sleep"
-                        type="range"
-                        min="0"
-                        max="12"
-                        step="0.5"
-                        value={dailyWellnessData.sleep}
-                        onChange={(e) => handleWellnessChange('sleep', parseFloat(e.target.value))}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="stress">Stress Level</Label>
-                      <span className="text-sm">{dailyWellnessData.stress} / 10</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Brain className="h-4 w-4 text-muted-foreground" />
-                      <input
-                        id="stress"
-                        type="range"
-                        min="1"
-                        max="10"
-                        value={dailyWellnessData.stress}
-                        onChange={(e) => handleWellnessChange('stress', parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="mood">Mood</Label>
-                      <span className="text-sm">{dailyWellnessData.mood} / 5</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Smile className="h-4 w-4 text-muted-foreground" />
-                      <input
-                        id="mood"
-                        type="range"
-                        min="1"
-                        max="5"
-                        value={dailyWellnessData.mood}
-                        onChange={(e) => handleWellnessChange('mood', parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="energy">Energy Level</Label>
-                      <span className="text-sm">{dailyWellnessData.energy} / 5</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Coffee className="h-4 w-4 text-muted-foreground" />
-                      <input
-                        id="energy"
-                        type="range"
-                        min="1"
-                        max="5"
-                        value={dailyWellnessData.energy}
-                        onChange={(e) => handleWellnessChange('energy', parseInt(e.target.value))}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full">Save Today's Entry</Button>
-              </CardFooter>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Wellness Insights</CardTitle>
-                <CardDescription>Track your well-being trends over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium">Metric to Display</h4>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant={wellnessMetric === "mood" ? "default" : "outline"} 
-                        size="sm" 
-                        onClick={() => setWellnessMetric("mood")}
-                      >
-                        Mood
-                      </Button>
-                      <Button 
-                        variant={wellnessMetric === "sleep" ? "default" : "outline"} 
-                        size="sm" 
-                        onClick={() => setWellnessMetric("sleep")}
-                      >
-                        Sleep
-                      </Button>
-                      <Button 
-                        variant={wellnessMetric === "stress" ? "default" : "outline"} 
-                        size="sm" 
-                        onClick={() => setWellnessMetric("stress")}
-                      >
-                        Stress
-                      </Button>
-                      <Button 
-                        variant={wellnessMetric === "energy" ? "default" : "outline"} 
-                        size="sm" 
-                        onClick={() => setWellnessMetric("energy")}
-                      >
-                        Energy
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="h-[250px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={mockWellnessData}
-                        margin={{
-                          top: 5,
-                          right: 10,
-                          left: 0,
-                          bottom: 5,
-                        }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                        <YAxis 
-                          domain={wellnessMetric === "sleep" ? [0, 12] : wellnessMetric === "stress" ? [0, 10] : [0, 5]}
-                          tick={{ fontSize: 12 }}
-                        />
-                        <Tooltip />
-                        <Line
-                          type="monotone"
-                          dataKey={wellnessMetric}
-                          stroke={
-                            wellnessMetric === "mood" ? "#3b82f6" : 
-                            wellnessMetric === "sleep" ? "#8b5cf6" : 
-                            wellnessMetric === "stress" ? "#ef4444" : 
-                            "#10b981"
-                          }
-                          strokeWidth={2}
-                          dot={{ r: 4 }}
-                          activeDot={{ r: 6 }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">View Detailed Report</Button>
-              </CardFooter>
-            </Card>
-            
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Wellness Recommendations</CardTitle>
-                <CardDescription>Personalized suggestions based on your well-being data</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="rounded-md border p-4">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-full bg-blue-100 p-2">
-                        <Moon className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium">Sleep Improvement</h4>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Your sleep pattern shows some inconsistency. Try to maintain a regular sleep schedule, 
-                          aiming for 7-8 hours each night. Consider reducing screen time before bed.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="rounded-md border p-4">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-full bg-green-100 p-2">
-                        <Heart className="h-4 w-4 text-green-600" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium">Stress Management</h4>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Your stress levels have been elevated recently. Consider incorporating mindfulness 
-                          practices or short breaks during study sessions. The Stress Management workshop on 
-                          November 25 might be helpful.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="rounded-md border p-4">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-full bg-purple-100 p-2">
-                        <Brain className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium">Mood Enhancement</h4>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Your mood has been improving over the past week. Continue engaging in activities 
-                          that bring you joy and consider joining social events to maintain this positive trend.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">Schedule Wellness Consultation</Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="profile" className="space-y-4">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Your basic information and academic details</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center mb-6">
-                  <Avatar className="h-24 w-24 mb-4">
-                    <AvatarImage src={studentProfile.photo} />
-                    <AvatarFallback>{studentProfile.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <h3 className="text-xl font-semibold">{studentProfile.name}</h3>
-                  <p className="text-sm text-muted-foreground">{studentProfile.email}</p>
-                  <p className="text-sm text-muted-foreground">ID: {studentProfile.id}</p>
-                </div>
-                
-                <Separator className="my-4" />
-                
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <School className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm font-medium w-24">Department:</span>
-                    <span className="text-sm">{studentProfile.department}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <GraduationCap className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm font-medium w-24">Section:</span>
-                    <span className="text-sm">{studentProfile.section}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <BookOpen className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm font-medium w-24">Year:</span>
-                    <span className="text-sm">{studentProfile.year}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span className="text-sm font-medium w-24">Advisor:</span>
-                    <span className="text-sm">{studentProfile.advisor}</span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">Edit Profile</Button>
-              </CardFooter>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Academic Progress</CardTitle>
-                <CardDescription>Your well-being assessment history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Well-being Score Trend</h4>
-                    <div className="h-[200px] rounded-md border p-4 flex items-center justify-center">
-                      <p className="text-sm text-muted-foreground">Well-being score chart would appear here</p>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Assessment Completion</h4>
+                  <div className="rounded-md bg-muted p-4">
+                    <h4 className="text-sm font-medium mb-2">Assessment Results Summary</h4>
                     <div className="space-y-2">
-                      <div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span>Completed Assessments</span>
-                          <span>1 of 3</span>
-                        </div>
-                        <Progress value={33} className="h-2" />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Department</h4>
-                    <div className="rounded-md bg-muted p-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{studentProfile.department}</span>
-                        <Badge variant="outline">{studentProfile.section}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">View Full Academic Record</Button>
-              </CardFooter>
-            </Card>
-            
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Upcoming Events</CardTitle>
-                <CardDescription>Your scheduled appointments and assessments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockAppointments.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Appointments</h4>
-                      {mockAppointments.map(appointment => (
-                        <div key={appointment.id} className="flex items-center justify-between rounded-md border p-3 mb-2">
-                          <div>
-                            <p className="text-sm font-medium">Meeting with {appointment.counselorName}</p>
-                            <p className="text-xs text-muted-foreground">{appointment.date} at {appointment.time}</p>
-                          </div>
-                          {getStatusBadge(appointment.status)}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Upcoming Assessments</h4>
-                    {mockAssessments
-                      .filter(assessment => assessment.status !== "completed")
-                      .map(assessment => (
-                        <div key={assessment.id} className="flex items-center justify-between rounded-md border p-3 mb-2">
-                          <div>
-                            <p className="text-sm font-medium">{assessment.title}</p>
-                            <p className="text-xs text-muted-foreground">Due by {assessment.dueDate}</p>
-                          </div>
+                      {mockResults[0].dimensions.map((dimension) => (
+                        <div key={dimension.name} className="grid grid-cols-2 gap-2">
+                          <div className="text-sm">{dimension.name}</div>
                           <div className="flex items-center gap-2">
-                            <div className="w-20 text-right">
-                              <span className="text-xs">{assessment.progress}%</span>
-                            </div>
-                            {getStatusBadge(assessment.status)}
+                            <Progress 
+                              value={dimension.score} 
+                              className="h-2" 
+                            />
+                            <span className="text-xs">{dimension.score}</span>
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </div>
+                  
+                  <div className="rounded-md border p-4">
+                    <h4 className="text-sm font-medium mb-2">AI Feedback Analysis</h4>
+                    <div className="space-y-4">
+                      <p className="text-sm">
+                        Based on your assessment results, here are some personalized insights:
+                      </p>
+                      
+                      <div className="space-y-3">
+                        <div className="rounded-md bg-blue-50 p-3">
+                          <h5 className="text-sm font-medium text-blue-700">Strengths</h5>
+                          <ul className="mt-1 list-disc pl-5 text-sm text-blue-700">
+                            <li>Your Personal Growth score (82) indicates a strong commitment to continuous learning and development.</li>
+                            <li>Your Purpose in Life score (75) shows you have clear goals and direction.</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="rounded-md bg-amber-50 p-3">
+                          <h5 className="text-sm font-medium text-amber-700">Areas for Growth</h5>
+                          <ul className="mt-1 list-disc pl-5 text-sm text-amber-700">
+                            <li>Your Environmental Mastery score (65) suggests you might benefit from developing better strategies to manage daily responsibilities.</li>
+                            <li>Your Self-Acceptance score (68) indicates an opportunity to develop a more positive attitude toward yourself.</li>
+                          </ul>
+                        </div>
+                        
+                        <div className="rounded-md bg-green-50 p-3">
+                          <h5 className="text-sm font-medium text-green-700">Recommendations</h5>
+                          <ul className="mt-1 list-disc pl-5 text-sm text-green-700">
+                            <li>Consider practicing daily mindfulness to improve your environmental mastery skills.</li>
+                            <li>Try keeping a gratitude journal to enhance self-acceptance.</li>
+                            <li>Continue engaging in activities that promote personal growth.</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Ask for More Specific Feedback</h4>
+                    <Textarea 
+                      placeholder="Ask a specific question about your results..."
+                      className="mb-2"
+                    />
+                    <Button className="w-full">Get AI Insights</Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-muted-foreground mb-4">Complete an assessment to receive AI feedback</p>
+                  <Button onClick={() => setSelectedTab("assessments")}>Take Assessment</Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { BarChart3, FileText, Settings, Users, Calendar, ChevronDown, MessageSquare, BookOpen, User, Heart } from "lucide-react"
+import { BarChart3, FileText, Settings, Users, Calendar, ChevronDown, MessageSquare, BookOpen, User, Heart, Brain, Calculator } from "lucide-react"
 import { LucideIcon } from "lucide-react"
 
 import {
@@ -53,12 +53,21 @@ const counselorNavigationItems: NavigationItem[] = [
         title: "Auto-Reminders",
         url: "/ryff/auto-reminders",
       },
+      {
+        title: "Ryff Scoring",
+        url: "/ryff/scoring",
+      },
     ],
   },
   {
     title: "Status",
     url: "/status",
     icon: Users,
+  },
+  {
+    title: "AI Feedback",
+    url: "/ai-feedback",
+    icon: Brain,
   },
   {
     title: "Reports",
@@ -85,8 +94,8 @@ const counselorNavigationItems: NavigationItem[] = [
 // Student navigation items
 const studentNavigationItems: NavigationItem[] = [
   {
-    title: "Assessments",
-    url: "/assessments",
+    title: "Assessment",
+    url: "/assessment",
     icon: BookOpen,
   },
   {
@@ -95,29 +104,9 @@ const studentNavigationItems: NavigationItem[] = [
     icon: FileText,
   },
   {
-    title: "Appointments",
-    url: "/appointments",
-    icon: Calendar,
-  },
-  {
-    title: "Messages",
-    url: "/messages",
+    title: "AI Feedback",
+    url: "/feedback",
     icon: MessageSquare,
-  },
-  {
-    title: "Resources",
-    url: "/resources",
-    icon: BookOpen,
-  },
-  {
-    title: "Wellness",
-    url: "/wellness",
-    icon: Heart,
-  },
-  {
-    title: "Profile",
-    url: "/profile",
-    icon: User,
   }
 ]
 
@@ -142,7 +131,13 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
       onNavigate?.(path);
     } else {
       // For counselor role, handle the nested paths
-      onNavigate?.(path.replace("/ryff/", "").replace("/", ""));
+      if (path.includes("ryff/")) {
+        // Extract the last part of the path for Ryff Assessment subitems
+        const subPath = path.split("/").pop() || "";
+        onNavigate?.(subPath);
+      } else {
+        onNavigate?.(path.replace("/", ""));
+      }
     }
   };
 
@@ -153,7 +148,21 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" onClick={() => onNavigate?.("dashboard")} className="cursor-pointer">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden">
-                <img src="/logo.png" alt="Logo" className="size-8 rounded-lg object-cover" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-8 text-primary"
+                >
+                  <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                  <path d="M9 12h6" />
+                  <path d="M12 9v6" />
+                  <path d="M7 15l10-6" />
+                </svg>
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-semibold">Ryff PWB</span>

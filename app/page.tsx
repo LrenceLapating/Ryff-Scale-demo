@@ -9,6 +9,9 @@ import { StatusMonitor } from "@/components/status-monitor"
 import { Reports } from "@/components/reports"
 import { Settings } from "@/components/settings"
 import { StudentDashboard } from "@/components/student-dashboard"
+import { AIFeedback } from "@/components/ai-feedback"
+import { RyffScoring } from "@/components/ryff-scoring"
+import { Notifications } from "@/components/notifications"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,14 +27,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 export default function Page() {
   const [currentPage, setCurrentPage] = useState("dashboard")
   const [userRole, setUserRole] = useState("admin") // Can be "admin" or "student"
+  const [selectedStudentId, setSelectedStudentId] = useState<string | undefined>(undefined)
 
   const handleNavigate = (page: string) => {
     setCurrentPage(page)
+    // Reset selected student when navigating to ai-feedback from menu
+    if (page === "ai-feedback") {
+      setSelectedStudentId(undefined)
+    }
   }
 
   const handleBackToAdmin = () => {
     setUserRole("admin")
     setCurrentPage("dashboard")
+    setSelectedStudentId(undefined)
+  }
+
+  const handleViewFeedback = (studentId: string) => {
+    setSelectedStudentId(studentId)
+    setCurrentPage("ai-feedback")
   }
 
   // Get the appropriate currentPage for the student dashboard
@@ -61,6 +75,8 @@ export default function Page() {
         return <BulkAssignment />
       case "auto-reminders":
         return <AutoReminders />
+      case "scoring":
+        return <RyffScoring />
       case "status":
         return <StatusMonitor />
       case "reports":
@@ -69,6 +85,8 @@ export default function Page() {
         return <Settings />
       case "student-view":
         return <StudentDashboard onBack={() => setCurrentPage("dashboard")} />
+      case "ai-feedback":
+        return <AIFeedback studentId={selectedStudentId} onBack={() => setCurrentPage("dashboard")} />
       default:
         return <DashboardOverview />
     }
@@ -86,6 +104,8 @@ export default function Page() {
         return "Bulk Assignment"
       case "auto-reminders":
         return "Auto-Reminders"
+      case "scoring":
+        return "Ryff Scoring"
       case "status":
         return "Status Monitor"
       case "reports":
@@ -94,6 +114,8 @@ export default function Page() {
         return "Settings"
       case "student-view":
         return "Student View"
+      case "ai-feedback":
+        return "AI Feedback Review"
       default:
         return "Dashboard"
     }
@@ -107,9 +129,12 @@ export default function Page() {
     switch (currentPage) {
       case "bulk-assignment":
       case "auto-reminders":
+      case "scoring":
         return ["Ryff Assessment", getPageTitle()]
       case "student-view":
         return ["Admin", "Student View"]
+      case "ai-feedback":
+        return ["Admin", "AI Feedback Review"]
       default:
         return [getPageTitle()]
     }
@@ -152,17 +177,21 @@ export default function Page() {
             </Breadcrumb>
           </div>
           
-          {/* Role switcher for demo purposes */}
-          {userRole === "admin" && (
-            <div className="ml-auto mr-4">
+          <div className="ml-auto flex items-center gap-2 mr-4">
+            {userRole === "admin" && (
+              <Notifications onViewFeedback={handleViewFeedback} />
+            )}
+            
+            {/* Role switcher for demo purposes */}
+            {userRole === "admin" && (
               <Tabs defaultValue="admin" onValueChange={(value) => setUserRole(value)}>
                 <TabsList>
                   <TabsTrigger value="admin">Counselor View</TabsTrigger>
                   <TabsTrigger value="student">Student View</TabsTrigger>
                 </TabsList>
               </Tabs>
-            </div>
-          )}
+            )}
+          </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min p-6">{renderContent()}</div>
