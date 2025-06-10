@@ -70,11 +70,11 @@ export function Reports() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Departments</SelectItem>
-                  <SelectItem value="ccs">CCS</SelectItem>
-                  <SelectItem value="cn">CN</SelectItem>
-                  <SelectItem value="cba">CBA</SelectItem>
-                  <SelectItem value="coe">COE</SelectItem>
-                  <SelectItem value="cas">CAS</SelectItem>
+                  <SelectItem value="CCS">CCS</SelectItem>
+                  <SelectItem value="CN">CN</SelectItem>
+                  <SelectItem value="CBA">CBA</SelectItem>
+                  <SelectItem value="COE">COE</SelectItem>
+                  <SelectItem value="CAS">CAS</SelectItem>
                 </SelectContent>
               </Select>
             </div>

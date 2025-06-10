@@ -14,7 +14,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, Calculator, Download, FileUp, Upload, Check, Info, Brain, Search, Filter, Eye, ChevronDown, ChevronUp } from "lucide-react"
+import { AlertCircle, Calculator, Download, FileUp, Upload, Check, Info, Brain, Search, Filter, Eye, ChevronDown, ChevronUp, MessageSquare } from "lucide-react"
 
 // Ryff Scale dimensions
 const dimensions = [
@@ -24,10 +24,13 @@ const dimensions = [
   "Positive Relations",
   "Purpose in Life",
   "Self-Acceptance"
-]
+] as const;
+
+// Type for dimension names
+type DimensionName = typeof dimensions[number];
 
 // Ryff Scale item mapping by dimension (for 42-item version)
-const dimensionItems42 = {
+const dimensionItems42: Record<DimensionName, number[]> = {
   "Autonomy": [1, 7, 13, 19, 25, 31, 37],
   "Environmental Mastery": [2, 8, 14, 20, 26, 32, 38],
   "Personal Growth": [3, 9, 15, 21, 27, 33, 39],
@@ -37,7 +40,7 @@ const dimensionItems42 = {
 }
 
 // Ryff Scale item mapping by dimension (for 54-item version)
-const dimensionItems54 = {
+const dimensionItems54: Record<DimensionName, number[]> = {
   "Autonomy": [1, 7, 13, 19, 25, 31, 37, 43, 49],
   "Environmental Mastery": [2, 8, 14, 20, 26, 32, 38, 44, 50],
   "Personal Growth": [3, 9, 15, 21, 27, 33, 39, 45, 51],
@@ -47,7 +50,7 @@ const dimensionItems54 = {
 }
 
 // Ryff Scale item mapping by dimension (for 84-item version)
-const dimensionItems84 = {
+const dimensionItems84: Record<DimensionName, number[]> = {
   "Autonomy": [1, 7, 13, 19, 25, 31, 37, 43, 49, 55, 61, 67, 73, 79],
   "Environmental Mastery": [2, 8, 14, 20, 26, 32, 38, 44, 50, 56, 62, 68, 74, 80],
   "Personal Growth": [3, 9, 15, 21, 27, 33, 39, 45, 51, 57, 63, 69, 75, 81],
@@ -70,11 +73,11 @@ const riskThresholds = {
 
 interface ScoringResult {
   dimensions: {
-    [key: string]: number;
+    [key in DimensionName]: number;
   };
   overallScore: number;
   riskLevel: string;
-  riskDimensions: string[];
+  riskDimensions: DimensionName[];
 }
 
 // Mock data for automatically scored assessments
@@ -83,7 +86,7 @@ const mockScoredAssessments = [
     id: "1",
     studentName: "John Doe",
     studentId: "ST12345",
-    department: "Information Technology",
+    department: "CCS",
     section: "BSIT3A",
     submissionDate: "2024-06-10",
     scaleVersion: "42",
@@ -94,16 +97,16 @@ const mockScoredAssessments = [
       "Positive Relations": 68,
       "Purpose in Life": 42,
       "Self-Acceptance": 60
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 58,
     riskLevel: "medium",
-    riskDimensions: ["Personal Growth", "Purpose in Life"]
+    riskDimensions: ["Personal Growth", "Purpose in Life"] as DimensionName[]
   },
   {
     id: "2",
     studentName: "Jane Smith",
     studentId: "ST12346",
-    department: "Computer Science",
+    department: "CCS",
     section: "BSCS2B",
     submissionDate: "2024-06-09",
     scaleVersion: "42",
@@ -114,16 +117,16 @@ const mockScoredAssessments = [
       "Positive Relations": 48,
       "Purpose in Life": 67,
       "Self-Acceptance": 45
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 57,
     riskLevel: "medium",
-    riskDimensions: ["Environmental Mastery", "Positive Relations", "Self-Acceptance"]
+    riskDimensions: ["Environmental Mastery", "Positive Relations", "Self-Acceptance"] as DimensionName[]
   },
   {
     id: "3",
     studentName: "Mike Johnson",
     studentId: "ST12347",
-    department: "Information Technology",
+    department: "CCS",
     section: "BSIT4A",
     submissionDate: "2024-06-08",
     scaleVersion: "42",
@@ -134,16 +137,16 @@ const mockScoredAssessments = [
       "Positive Relations": 65,
       "Purpose in Life": 75,
       "Self-Acceptance": 35
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 64,
     riskLevel: "high",
-    riskDimensions: ["Self-Acceptance"]
+    riskDimensions: ["Self-Acceptance"] as DimensionName[]
   },
   {
     id: "4",
     studentName: "Sarah Williams",
     studentId: "ST12348",
-    department: "Computer Science",
+    department: "CCS",
     section: "BSCS3A",
     submissionDate: "2024-06-07",
     scaleVersion: "42",
@@ -154,16 +157,16 @@ const mockScoredAssessments = [
       "Positive Relations": 40,
       "Purpose in Life": 58,
       "Self-Acceptance": 62
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 56,
     riskLevel: "high",
-    riskDimensions: ["Positive Relations"]
+    riskDimensions: ["Positive Relations"] as DimensionName[]
   },
   {
     id: "5",
     studentName: "David Lee",
     studentId: "ST12349",
-    department: "Information Technology",
+    department: "CCS",
     section: "BSIT2B",
     submissionDate: "2024-06-06",
     scaleVersion: "42",
@@ -174,16 +177,16 @@ const mockScoredAssessments = [
       "Positive Relations": 76,
       "Purpose in Life": 82,
       "Self-Acceptance": 79
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 78,
     riskLevel: "low",
-    riskDimensions: []
+    riskDimensions: [] as DimensionName[]
   },
   {
     id: "6",
     studentName: "Emily Chen",
     studentId: "ST12350",
-    department: "Computer Science",
+    department: "CCS",
     section: "BSCS1A",
     submissionDate: "2024-06-05",
     scaleVersion: "42",
@@ -194,16 +197,16 @@ const mockScoredAssessments = [
       "Positive Relations": 72,
       "Purpose in Life": 70,
       "Self-Acceptance": 73
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 71,
     riskLevel: "low",
-    riskDimensions: []
+    riskDimensions: [] as DimensionName[]
   },
   {
     id: "7",
     studentName: "Robert Brown",
     studentId: "ST12351",
-    department: "Engineering",
+    department: "COE",
     section: "BSCE3B",
     submissionDate: "2024-06-04",
     scaleVersion: "42",
@@ -214,16 +217,16 @@ const mockScoredAssessments = [
       "Positive Relations": 60,
       "Purpose in Life": 55,
       "Self-Acceptance": 48
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 58,
     riskLevel: "medium",
-    riskDimensions: ["Purpose in Life", "Self-Acceptance"]
+    riskDimensions: ["Purpose in Life", "Self-Acceptance"] as DimensionName[]
   },
   {
     id: "8",
     studentName: "Lisa Rodriguez",
     studentId: "ST12352",
-    department: "Engineering",
+    department: "COE",
     section: "BSCE2A",
     submissionDate: "2024-06-03",
     scaleVersion: "42",
@@ -234,16 +237,16 @@ const mockScoredAssessments = [
       "Positive Relations": 78,
       "Purpose in Life": 85,
       "Self-Acceptance": 81
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 80,
     riskLevel: "low",
-    riskDimensions: []
+    riskDimensions: [] as DimensionName[]
   },
   {
     id: "9",
     studentName: "Kevin Wong",
     studentId: "ST12353",
-    department: "Information Technology",
+    department: "CCS",
     section: "BSIT3A",
     submissionDate: "2024-06-02",
     scaleVersion: "42",
@@ -254,16 +257,16 @@ const mockScoredAssessments = [
       "Positive Relations": 51,
       "Purpose in Life": 47,
       "Self-Acceptance": 45
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 50,
     riskLevel: "high",
-    riskDimensions: ["Personal Growth", "Purpose in Life", "Self-Acceptance"]
+    riskDimensions: ["Personal Growth", "Purpose in Life", "Self-Acceptance"] as DimensionName[]
   },
   {
     id: "10",
     studentName: "Jessica Martin",
     studentId: "ST12354",
-    department: "Computer Science",
+    department: "CN",
     section: "BSCS2B",
     submissionDate: "2024-06-01",
     scaleVersion: "42",
@@ -274,15 +277,59 @@ const mockScoredAssessments = [
       "Positive Relations": 67,
       "Purpose in Life": 72,
       "Self-Acceptance": 69
-    },
+    } as { [key in DimensionName]: number },
     overallScore: 68,
     riskLevel: "medium",
-    riskDimensions: []
+    riskDimensions: [] as DimensionName[]
+  },
+  {
+    id: "11",
+    studentName: "Alex Thompson",
+    studentId: "ST12355",
+    department: "CBA",
+    section: "BSBA3A",
+    submissionDate: "2024-06-02",
+    scaleVersion: "42",
+    dimensions: {
+      "Autonomy": 66,
+      "Environmental Mastery": 63,
+      "Personal Growth": 69,
+      "Positive Relations": 67,
+      "Purpose in Life": 70,
+      "Self-Acceptance": 55
+    } as { [key in DimensionName]: number },
+    overallScore: 65,
+    riskLevel: "medium",
+    riskDimensions: ["Self-Acceptance"] as DimensionName[]
+  },
+  {
+    id: "12",
+    studentName: "Sophia Garcia",
+    studentId: "ST12356",
+    department: "CAS",
+    section: "BSPS2B",
+    submissionDate: "2024-06-03",
+    scaleVersion: "42",
+    dimensions: {
+      "Autonomy": 70,
+      "Environmental Mastery": 62,
+      "Personal Growth": 74,
+      "Positive Relations": 69,
+      "Purpose in Life": 65,
+      "Self-Acceptance": 62
+    } as { [key in DimensionName]: number },
+    overallScore: 67,
+    riskLevel: "medium",
+    riskDimensions: [] as DimensionName[]
   }
 ];
 
-export function RyffScoring() {
-  const [activeTab, setActiveTab] = useState("automatic")
+// First, update the RyffScoring component props to accept the onNavigate function
+interface RyffScoringProps {
+  onNavigate?: (page: string, params?: Record<string, string>) => void;
+}
+
+export function RyffScoring({ onNavigate }: RyffScoringProps) {
   const [scaleVersion, setScaleVersion] = useState("42")
   const [manualResponses, setManualResponses] = useState<string>("")
   const [studentName, setStudentName] = useState<string>("")
@@ -298,15 +345,39 @@ export function RyffScoring() {
   const [sectionFilter, setSectionFilter] = useState("all")
   const [riskFilter, setRiskFilter] = useState("all")
   const [selectedAssessment, setSelectedAssessment] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<"student" | "department" | "section">("student")
+  const [viewMode, setViewMode] = useState<"student" | "department">("student")
   const [sortConfig, setSortConfig] = useState<{key: string, direction: 'ascending' | 'descending'}>({
     key: 'submissionDate',
     direction: 'descending'
   })
   
+  // Check localStorage for department filter on component mount
+  useEffect(() => {
+    const savedDepartment = localStorage.getItem("selectedDepartmentFilter");
+    if (savedDepartment) {
+      setDepartmentFilter(savedDepartment);
+      // Clear the localStorage item to prevent it from being applied on future visits
+      localStorage.removeItem("selectedDepartmentFilter");
+    }
+  }, []);
+  
   // Extract unique departments and sections from mock data
   const departments = Array.from(new Set(mockScoredAssessments.map(a => a.department)))
-  const sections = Array.from(new Set(mockScoredAssessments.map(a => a.section)))
+  
+  // Get all sections and sections filtered by department
+  const allSections = Array.from(new Set(mockScoredAssessments.map(a => a.section)))
+  const filteredSections = departmentFilter === "all" 
+    ? allSections 
+    : Array.from(new Set(mockScoredAssessments
+        .filter(a => a.department === departmentFilter)
+        .map(a => a.section)))
+  
+  // Handle department filter change
+  const handleDepartmentChange = (value: string) => {
+    setDepartmentFilter(value)
+    // Reset section filter when department changes
+    setSectionFilter("all")
+  }
   
   // Filter assessments based on filters
   const filteredAssessments = mockScoredAssessments.filter(assessment => {
@@ -324,6 +395,20 @@ export function RyffScoring() {
   
   // Sort assessments
   const sortedAssessments = [...filteredAssessments].sort((a, b) => {
+    // When risk filter is "all", prioritize sorting by risk level (high, medium, low)
+    if (riskFilter === "all") {
+      // Define risk level priority: high (3), medium (2), low (1)
+      const getRiskPriority = (risk: string): number => {
+        if (risk === "high") return 3;
+        if (risk === "medium") return 2;
+        return 1; // low risk
+      }
+      
+      const riskCompare = getRiskPriority(b.riskLevel) - getRiskPriority(a.riskLevel);
+      if (riskCompare !== 0) return riskCompare;
+    }
+    
+    // If risk levels are the same or a specific risk level is selected, use the normal sorting
     if (sortConfig.key === 'submissionDate') {
       return sortConfig.direction === 'ascending' 
         ? new Date(a.submissionDate).getTime() - new Date(b.submissionDate).getTime()
@@ -357,7 +442,7 @@ export function RyffScoring() {
     const avgScore = Math.round(totalScore / deptAssessments.length)
     
     // Calculate dimension averages
-    const dimensionScores: {[key: string]: number} = {}
+    const dimensionScores = {} as { [key in DimensionName]: number }
     for (const dimension of dimensions) {
       const totalDimScore = deptAssessments.reduce((sum, a) => sum + a.dimensions[dimension], 0)
       dimensionScores[dimension] = Math.round(totalDimScore / deptAssessments.length)
@@ -380,7 +465,7 @@ export function RyffScoring() {
   })
   
   // Calculate aggregated data for sections
-  const sectionData = sections.map(sect => {
+  const sectionData = allSections.map(sect => {
     const sectAssessments = mockScoredAssessments.filter(a => a.section === sect)
     const totalScore = sectAssessments.reduce((sum, a) => sum + a.overallScore, 0)
     const avgScore = Math.round(totalScore / sectAssessments.length)
@@ -389,7 +474,7 @@ export function RyffScoring() {
     const department = sectAssessments[0]?.department || ""
     
     // Calculate dimension averages
-    const dimensionScores: {[key: string]: number} = {}
+    const dimensionScores = {} as { [key in DimensionName]: number }
     for (const dimension of dimensions) {
       const totalDimScore = sectAssessments.reduce((sum, a) => sum + a.dimensions[dimension], 0)
       dimensionScores[dimension] = Math.round(totalDimScore / sectAssessments.length)
@@ -443,12 +528,12 @@ export function RyffScoring() {
         : reversedItems84
     
     // Calculate dimension scores
-    const dimensionScores: { [key: string]: number } = {}
+    const dimensionScores = {} as { [key in DimensionName]: number }
     let totalScore = 0
     let totalItems = 0
     
     for (const dimension of dimensions) {
-      const items = dimensionItems[dimension as keyof typeof dimensionItems]
+      const items = dimensionItems[dimension]
       let dimensionTotal = 0
       
       for (const itemNum of items) {
@@ -484,7 +569,7 @@ export function RyffScoring() {
     
     // Determine risk level and risk dimensions
     let riskLevel = "low"
-    const riskDimensions: string[] = []
+    const riskDimensions: DimensionName[] = []
     
     for (const dimension of dimensions) {
       const score = dimensionScores[dimension]
@@ -548,7 +633,7 @@ export function RyffScoring() {
       
       // Calculate scores
       const result = calculateScores(responses, scaleVersion)
-      setScoringResult(result)
+      setScoringResult(result as ScoringResult)
       setSuccessMessage("Scoring completed successfully!")
     } catch (err) {
       setError("Error parsing responses. Please check the format and try again.")
@@ -595,6 +680,89 @@ export function RyffScoring() {
     }, 3000)
   }
 
+  // Add this function to generate AI recommendations based on assessment data
+  const generateAIRecommendations = (assessment: any) => {
+    // In a real implementation, this would call an AI service
+    // For now, we'll use conditional logic based on the risk dimensions
+    
+    const recommendations = [];
+    
+    // Base recommendations on risk dimensions
+    if (assessment.riskDimensions.includes("Self-Acceptance")) {
+      recommendations.push({
+        title: "Self-Acceptance",
+        description: "Consider self-compassion exercises and positive affirmation techniques. Recommend journaling about personal strengths and achievements.",
+        resources: ["Self-Compassion Workbook", "Positive Psychology Interventions"]
+      });
+    }
+    
+    if (assessment.riskDimensions.includes("Personal Growth")) {
+      recommendations.push({
+        title: "Personal Growth",
+        description: "Focus on goal-setting exercises and skill development opportunities. Encourage exploration of new interests and learning experiences.",
+        resources: ["Growth Mindset Workshop", "Personal Development Plan Template"]
+      });
+    }
+    
+    if (assessment.riskDimensions.includes("Purpose in Life")) {
+      recommendations.push({
+        title: "Purpose in Life",
+        description: "Explore values clarification exercises and meaning-making activities. Consider volunteering or community engagement opportunities.",
+        resources: ["Values Assessment Tool", "Finding Meaning Workshop"]
+      });
+    }
+    
+    if (assessment.riskDimensions.includes("Positive Relations")) {
+      recommendations.push({
+        title: "Positive Relations",
+        description: "Practice active listening and communication skills. Consider social skills training and relationship-building activities.",
+        resources: ["Communication Skills Workshop", "Building Healthy Relationships Guide"]
+      });
+    }
+    
+    if (assessment.riskDimensions.includes("Environmental Mastery")) {
+      recommendations.push({
+        title: "Environmental Mastery",
+        description: "Work on time management and organizational skills. Focus on creating structured routines and managing daily responsibilities.",
+        resources: ["Time Management Techniques", "Environmental Organization Strategies"]
+      });
+    }
+    
+    if (assessment.riskDimensions.includes("Autonomy")) {
+      recommendations.push({
+        title: "Autonomy",
+        description: "Practice assertiveness training and decision-making skills. Encourage independent thinking and personal boundary setting.",
+        resources: ["Assertiveness Training Guide", "Decision-Making Framework"]
+      });
+    }
+    
+    // Add general recommendation if no specific risk dimensions or overall score is low
+    if (recommendations.length === 0 || assessment.overallScore < 60) {
+      recommendations.push({
+        title: "General Well-being",
+        description: "Focus on holistic well-being practices including regular physical activity, mindfulness, and stress management techniques.",
+        resources: ["Comprehensive Well-being Guide", "Stress Management Toolkit"]
+      });
+    }
+    
+    return recommendations;
+  };
+
+  // Add this function to navigate to AI Feedback with department filter
+  const handleViewAIFeedback = (department: string, studentId?: string) => {
+    if (onNavigate) {
+      // Make sure to pass the studentId parameter to ensure we go directly to student details
+      if (studentId) {
+        onNavigate("ai-feedback", { 
+          department, 
+          studentId // Always include studentId when available
+        });
+      } else {
+        onNavigate("ai-feedback", { department });
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -604,25 +772,18 @@ export function RyffScoring() {
             Ryff Scale Automated Scoring
           </CardTitle>
           <CardDescription>
-            View automatically scored assessments and calculate scores from manual responses
+            View automatically scored assessments and monitor student well-being
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="automatic">Automatic Scoring</TabsTrigger>
-              <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-              <TabsTrigger value="upload">Upload Responses</TabsTrigger>
-              <TabsTrigger value="bulk">Bulk Processing</TabsTrigger>
-            </TabsList>
-            
+          <Tabs defaultValue="automatic" className="space-y-4">
             <TabsContent value="automatic" className="space-y-4">
               {/* View Mode Selector */}
               <div className="flex justify-between items-center">
                 <div>
                   <RadioGroup 
                     value={viewMode} 
-                    onValueChange={(value) => setViewMode(value as "student" | "department" | "section")}
+                    onValueChange={(value) => setViewMode(value as "student" | "department")}
                     className="flex space-x-4"
                   >
                     <div className="flex items-center space-x-2">
@@ -632,10 +793,6 @@ export function RyffScoring() {
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="department" id="department-view" />
                       <Label htmlFor="department-view">Department Summary</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="section" id="section-view" />
-                      <Label htmlFor="section-view">Section Summary</Label>
                     </div>
                   </RadioGroup>
                 </div>
@@ -668,7 +825,7 @@ export function RyffScoring() {
                     
                     {viewMode === "student" && (
                       <>
-                        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                        <Select value={departmentFilter} onValueChange={handleDepartmentChange}>
                           <SelectTrigger className="w-full md:w-[180px]">
                             <SelectValue placeholder="Department" />
                           </SelectTrigger>
@@ -677,6 +834,8 @@ export function RyffScoring() {
                             {departments.map(dept => (
                               <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                             ))}
+                            {!departments.includes("CBA") && <SelectItem value="CBA">CBA</SelectItem>}
+                            {!departments.includes("CAS") && <SelectItem value="CAS">CAS</SelectItem>}
                           </SelectContent>
                         </Select>
                         
@@ -686,7 +845,7 @@ export function RyffScoring() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">All Sections</SelectItem>
-                            {sections.map(sect => (
+                            {filteredSections.map(sect => (
                               <SelectItem key={sect} value={sect}>{sect}</SelectItem>
                             ))}
                           </SelectContent>
@@ -793,91 +952,125 @@ export function RyffScoring() {
                     </div>
                   )}
                   
-                  {/* Department view */}
+                  {/* Department view - Enhanced version */}
                   {viewMode === "department" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {departmentData.map((dept) => (
-                        <Card key={dept.department}>
-                          <CardHeader className="pb-2">
-                            <CardTitle>{dept.department}</CardTitle>
-                            <CardDescription>
-                              {dept.studentCount} students assessed
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div>
-                              <div className="flex justify-between items-center mb-1">
-                                <span className="text-sm font-medium">Overall Average</span>
-                                <span className={`font-bold ${getScoreColor(dept.overallScore)}`}>{dept.overallScore}</span>
-                              </div>
-                              <Progress value={dept.overallScore} className="h-2" />
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-3">
-                              {dimensions.map(dim => (
-                                <div key={dim} className="text-sm">
-                                  <div className="flex justify-between mb-1">
-                                    <span>{dim}</span>
-                                    <span className={getScoreColor(dept.dimensions[dim])}>{dept.dimensions[dim]}</span>
-                                  </div>
-                                  <Progress value={dept.dimensions[dim]} className="h-1" />
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {departmentData.map((dept) => (
+                          <Card key={dept.department} className="overflow-hidden">
+                            <CardHeader className="pb-2 bg-muted/20">
+                              <CardTitle className="text-lg">{dept.department}</CardTitle>
+                              <CardDescription>
+                                {dept.studentCount} students assessed
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4 pt-4">
+                              <div>
+                                <div className="flex justify-between items-center mb-1">
+                                  <span className="text-sm font-medium">Overall Well-being Score</span>
+                                  <span className={`text-lg font-bold ${getScoreColor(dept.overallScore)}`}>{dept.overallScore}</span>
                                 </div>
-                              ))}
-                            </div>
-                            
-                            <div className="flex justify-between text-sm pt-2">
-                              <div className="flex items-center gap-1">
-                                <Badge variant="destructive" className="h-2 w-2 rounded-full p-0" />
-                                <span>High Risk: {dept.highRisk}</span>
+                                <Progress value={dept.overallScore} className="h-3" />
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Badge variant="secondary" className="h-2 w-2 rounded-full p-0" />
-                                <span>Medium: {dept.mediumRisk}</span>
+                              
+                              <div className="border rounded-md p-3 bg-muted/10">
+                                <h4 className="text-sm font-medium mb-2">Risk Assessment</h4>
+                                <div className="flex justify-between text-sm">
+                                  <div className="flex flex-col items-center">
+                                    <Badge variant="destructive" className="mb-2">
+                                      {dept.highRisk}
+                                    </Badge>
+                                    <span className="text-xs">High Risk</span>
+                                  </div>
+                                  <div className="flex flex-col items-center">
+                                    <Badge variant="secondary" className="mb-2">
+                                      {dept.mediumRisk}
+                                    </Badge>
+                                    <span className="text-xs">Medium</span>
+                                  </div>
+                                  <div className="flex flex-col items-center">
+                                    <Badge variant="outline" className="mb-2">
+                                      {dept.lowRisk}
+                                    </Badge>
+                                    <span className="text-xs">Low</span>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Badge variant="outline" className="h-2 w-2 rounded-full p-0" />
-                                <span>Low: {dept.lowRisk}</span>
+                              
+                              <Separator />
+                              
+                              <div>
+                                <h4 className="text-sm font-medium mb-2">Dimension Analysis</h4>
+                                <div className="space-y-2">
+                                  {dimensions.map(dim => {
+                                    const score = dept.dimensions[dim];
+                                    const isRisk = score <= riskThresholds.medium;
+                                    
+                                    return (
+                                      <div key={dim} className="text-sm">
+                                        <div className="flex justify-between mb-1">
+                                          <span>{dim}</span>
+                                          <span className={`font-medium ${getScoreColor(score)}`}>{score}</span>
+                                        </div>
+                                        <div className="relative h-1.5">
+                                          <div className="absolute inset-0 bg-muted rounded-full"></div>
+                                          <div 
+                                            className={`absolute inset-y-0 left-0 rounded-full ${
+                                              score <= riskThresholds.high 
+                                                ? 'bg-destructive' 
+                                                : score <= riskThresholds.medium 
+                                                  ? 'bg-yellow-500' 
+                                                  : 'bg-green-500'
+                                            }`}
+                                            style={{ width: `${score}%` }}
+                                          />
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Section view */}
-                  {viewMode === "section" && (
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Section</TableHead>
-                            <TableHead>Department</TableHead>
-                            <TableHead className="text-center">Students</TableHead>
-                            <TableHead className="text-center">Overall Avg</TableHead>
-                            <TableHead className="text-center">High Risk</TableHead>
-                            <TableHead className="text-center">Medium Risk</TableHead>
-                            <TableHead className="text-center">Low Risk</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {sectionData.map(section => (
-                            <TableRow key={section.section}>
-                              <TableCell className="font-medium">{section.section}</TableCell>
-                              <TableCell>{section.department}</TableCell>
-                              <TableCell className="text-center">{section.studentCount}</TableCell>
-                              <TableCell className="text-center">
-                                <span className={getScoreColor(section.overallScore)}>
-                                  {section.overallScore}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-center">{section.highRisk}</TableCell>
-                              <TableCell className="text-center">{section.mediumRisk}</TableCell>
-                              <TableCell className="text-center">{section.lowRisk}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                      
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base">Department Comparison</CardTitle>
+                          <CardDescription>Compare overall well-being scores across departments</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            {departmentData
+                              .sort((a, b) => b.overallScore - a.overallScore)
+                              .map((dept) => (
+                                <div key={`chart-${dept.department}`} className="flex items-center gap-2">
+                                  <div className="w-32 truncate font-medium">
+                                    {dept.department}
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="h-6 bg-muted rounded-full overflow-hidden relative">
+                                      <div
+                                        className={`absolute inset-y-0 left-0 ${
+                                          dept.overallScore <= riskThresholds.high 
+                                            ? 'bg-destructive' 
+                                            : dept.overallScore <= riskThresholds.medium 
+                                              ? 'bg-yellow-500' 
+                                              : 'bg-green-500'
+                                        }`}
+                                        style={{ width: `${dept.overallScore}%` }}
+                                      />
+                                      <div className="absolute inset-0 flex items-center justify-end pr-2">
+                                        <span className="text-sm font-medium">{dept.overallScore}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   )}
                 </>
@@ -926,42 +1119,65 @@ export function RyffScoring() {
                                   <h5 className="font-medium">{dimension}</h5>
                                   <span className={`font-bold ${getScoreColor(score)}`}>{score}</span>
                                 </div>
-                                <Progress value={score} className={`h-2 ${isRiskDimension ? 'bg-red-100' : ''}`} />
-                                {isRiskDimension && (
-                                  <p className="text-xs text-red-600 mt-2">
-                                    {score <= riskThresholds.high ? "High risk area" : "Potential concern"}
-                                  </p>
-                                )}
+                                <Progress value={score} className={`h-2 ${
+                                  score <= riskThresholds.high 
+                                    ? 'bg-destructive' 
+                                    : score <= riskThresholds.medium 
+                                      ? 'bg-yellow-500' 
+                                      : 'bg-green-500'
+                                }`} />
                               </div>
-                            )
+                            );
                           })}
                         </div>
                       </div>
                       
                       <Separator />
                       
-                      <div className="p-4 rounded-lg bg-blue-50 flex items-start gap-3">
-                        <Brain className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-blue-800 mb-1">AI Recommendation</h4>
-                          <p className="text-sm text-blue-700">
-                            {currentAssessment.riskLevel === "high" ? (
-                              "This student shows significant risk factors that may require immediate attention. Consider scheduling a one-on-one counseling session to address the identified concerns."
-                            ) : currentAssessment.riskLevel === "medium" ? (
-                              "This student shows some potential areas of concern. Regular check-ins and targeted interventions for the identified dimensions may be beneficial."
-                            ) : (
-                              "This student appears to be maintaining good psychological well-being. Continue to provide general support and periodic assessment."
-                            )}
-                          </p>
+                      {/* AI Recommendations Section */}
+                      <div>
+                        <h4 className="text-lg font-medium mb-4 flex items-center gap-2">
+                          <Brain className="h-5 w-5 text-blue-500" />
+                          AI Recommendations
+                        </h4>
+                        
+                        <div className="space-y-4">
+                          {generateAIRecommendations(currentAssessment).map((recommendation, index) => (
+                            <Card key={index} className="border-l-4 border-l-blue-500">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-base">{recommendation.title}</CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-2 pt-0">
+                                <p className="text-sm">{recommendation.description}</p>
+                                
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                  <span className="text-xs font-medium text-muted-foreground">Recommended Resources:</span>
+                                  {recommendation.resources.map((resource, i) => (
+                                    <Badge key={i} variant="outline" className="bg-blue-50">
+                                      {resource}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                          
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-1"
+                              onClick={() => handleViewAIFeedback(currentAssessment.department, currentAssessment.studentId)}
+                            >
+                              <Brain className="h-4 w-4" />
+                              View Student AI Insights
+                            </Button>
+                            <Button variant="outline" size="sm" className="gap-1">
+                              <MessageSquare className="h-4 w-4" />
+                              Request Detailed AI Analysis
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex justify-end space-x-2">
-                        <Button variant="outline" className="gap-2">
-                          <Download className="h-4 w-4" />
-                          Export Report
-                        </Button>
-                        <Button>Contact Student</Button>
                       </div>
                     </>
                   )}
@@ -970,253 +1186,173 @@ export function RyffScoring() {
             </TabsContent>
             
             <TabsContent value="manual" className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="studentName">Student Name</Label>
-                  <Input 
-                    id="studentName" 
-                    value={studentName} 
-                    onChange={(e) => setStudentName(e.target.value)} 
-                    placeholder="Enter student name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="studentId">Student ID (Optional)</Label>
-                  <Input 
-                    id="studentId" 
-                    value={studentId} 
-                    onChange={(e) => setStudentId(e.target.value)} 
-                    placeholder="Enter student ID"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="studentClass">Class/Section (Optional)</Label>
-                  <Input 
-                    id="studentClass" 
-                    value={studentClass} 
-                    onChange={(e) => setStudentClass(e.target.value)} 
-                    placeholder="Enter class or section"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Ryff Scale Version</Label>
-                <RadioGroup value={scaleVersion} onValueChange={setScaleVersion} className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="42" id="r42" />
-                    <Label htmlFor="r42">42 items</Label>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="studentName">Student Name</Label>
+                      <Input 
+                        id="studentName" 
+                        value={studentName}
+                        onChange={(e) => setStudentName(e.target.value)}
+                        placeholder="Enter student name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="studentId">Student ID</Label>
+                      <Input 
+                        id="studentId" 
+                        value={studentId}
+                        onChange={(e) => setStudentId(e.target.value)}
+                        placeholder="Optional"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="54" id="r54" />
-                    <Label htmlFor="r54">54 items</Label>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="studentClass">Class/Section</Label>
+                      <Input 
+                        id="studentClass" 
+                        value={studentClass}
+                        onChange={(e) => setStudentClass(e.target.value)}
+                        placeholder="Optional"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="scaleVersion">Scale Version</Label>
+                      <Select value={scaleVersion} onValueChange={setScaleVersion}>
+                        <SelectTrigger id="scaleVersion">
+                          <SelectValue placeholder="Select version" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="42">42-item</SelectItem>
+                          <SelectItem value="54">54-item</SelectItem>
+                          <SelectItem value="84">84-item</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="84" id="r84" />
-                    <Label htmlFor="r84">84 items</Label>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="responses">Responses (1-6 for each item)</Label>
+                    <Textarea 
+                      id="responses" 
+                      value={manualResponses}
+                      onChange={(e) => setManualResponses(e.target.value)}
+                      placeholder="Enter responses, one per line (e.g., '1: 4' or just '4')"
+                      className="min-h-[200px]"
+                    />
                   </div>
-                </RadioGroup>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="responses">Enter Responses (one per line, format: "1: 4" or just "4")</Label>
-                <Textarea 
-                  id="responses" 
-                  value={manualResponses} 
-                  onChange={(e) => setManualResponses(e.target.value)} 
-                  placeholder="1: 4&#10;2: 5&#10;3: 3&#10;..."
-                  className="min-h-[200px] font-mono"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Enter one response per line. Format can be "Question: Answer" or just the answer value (1-6).
-                </p>
-              </div>
-              
-              <div className="flex justify-end">
-                <Button onClick={parseManualResponses}>Calculate Scores</Button>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="upload" className="space-y-4">
-              <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-                  <Upload className="h-6 w-6 text-muted-foreground" />
+                  
+                  <Button onClick={parseManualResponses} className="w-full">
+                    <Calculator className="mr-2 h-4 w-4" />
+                    Calculate Scores
+                  </Button>
                 </div>
-                <h3 className="text-lg font-medium mb-2">Upload Response File</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Upload CSV or Excel files with assessment responses
-                </p>
-                <Button className="gap-2">
-                  <FileUp className="h-4 w-4" />
-                  Select File
-                </Button>
-                <p className="text-xs text-muted-foreground mt-4">
-                  Supported formats: .csv, .xlsx
-                </p>
-              </div>
-              
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertTitle>Coming Soon</AlertTitle>
-                <AlertDescription>
-                  File upload functionality is under development and will be available in a future update.
-                </AlertDescription>
-              </Alert>
-            </TabsContent>
-            
-            <TabsContent value="bulk" className="space-y-4">
-              <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-                  <Calculator className="h-6 w-6 text-muted-foreground" />
+                
+                <div className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {successMessage && (
+                    <Alert className="bg-green-50 text-green-800 border-green-200">
+                      <Check className="h-4 w-4" />
+                      <AlertTitle>Success</AlertTitle>
+                      <AlertDescription>{successMessage}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {scoringResult && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Scoring Results</CardTitle>
+                        <CardDescription>
+                          {studentName}'s psychological well-being assessment
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium">Overall Score</span>
+                            <span className={`text-xl font-bold ${getScoreColor(scoringResult.overallScore)}`}>
+                              {scoringResult.overallScore}
+                            </span>
+                          </div>
+                          <Progress 
+                            value={scoringResult.overallScore} 
+                            className="h-3"
+                          />
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Risk Level:</span>
+                          {getRiskBadge(scoringResult.riskLevel)}
+                        </div>
+                        
+                        {scoringResult.riskDimensions.length > 0 && (
+                          <Alert>
+                            <Info className="h-4 w-4" />
+                            <AlertTitle>Risk Dimensions</AlertTitle>
+                            <AlertDescription>
+                              The following dimensions may require attention:
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {scoringResult.riskDimensions.map(dim => (
+                                  <Badge key={dim} variant="outline">{dim}</Badge>
+                                ))}
+                              </div>
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        
+                        <Separator />
+                        
+                        <div>
+                          <h4 className="font-medium mb-3">Dimension Scores</h4>
+                          <div className="space-y-3">
+                            {dimensions.map(dimension => {
+                              const score = scoringResult.dimensions[dimension]
+                              return (
+                                <div key={dimension}>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <span>{dimension}</span>
+                                    <span className={`font-medium ${getScoreColor(score)}`}>{score}</span>
+                                  </div>
+                                  <Progress 
+                                    value={score} 
+                                    className={`h-2 ${
+                                      score <= riskThresholds.high 
+                                        ? 'bg-destructive' 
+                                        : score <= riskThresholds.medium 
+                                          ? 'bg-yellow-500' 
+                                          : 'bg-green-500'
+                                    }`}
+                                  />
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button onClick={saveResults} className="w-full">
+                          <Check className="mr-2 h-4 w-4" />
+                          Save to Student Profile
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  )}
                 </div>
-                <h3 className="text-lg font-medium mb-2">Bulk Score Processing</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Process multiple assessments at once from a batch file
-                </p>
-                <Button className="gap-2">
-                  <FileUp className="h-4 w-4" />
-                  Upload Batch File
-                </Button>
-                <p className="text-xs text-muted-foreground mt-4">
-                  Upload a CSV file with multiple student responses for batch processing
-                </p>
               </div>
-              
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertTitle>Coming Soon</AlertTitle>
-                <AlertDescription>
-                  Bulk processing functionality is under development and will be available in a future update.
-                </AlertDescription>
-              </Alert>
             </TabsContent>
           </Tabs>
-          
-          {error && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          
-          {successMessage && (
-            <Alert className="mt-4 bg-green-50 border-green-200">
-              <Check className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-600">Success</AlertTitle>
-              <AlertDescription className="text-green-700">{successMessage}</AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
-      
-      {scoringResult && (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle>Scoring Results</CardTitle>
-                <CardDescription>
-                  {studentName}{studentId ? ` (${studentId})` : ""}{studentClass ? ` - ${studentClass}` : ""}
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                {getRiskBadge(scoringResult.riskLevel)}
-                <Badge variant="outline">{scaleVersion}-item scale</Badge>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Overall Score */}
-            <div>
-              <h3 className="text-lg font-medium mb-2">Overall Psychological Well-Being Score</h3>
-              <div className="flex items-center gap-4">
-                <Progress value={scoringResult.overallScore} className="h-4 flex-1" />
-                <span className={`text-xl font-bold ${getScoreColor(scoringResult.overallScore)}`}>
-                  {scoringResult.overallScore}
-                </span>
-              </div>
-            </div>
-            
-            <Separator />
-            
-            {/* Dimension Scores */}
-            <div>
-              <h3 className="text-lg font-medium mb-4">Dimension Scores</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {dimensions.map((dimension) => {
-                  const score = scoringResult.dimensions[dimension]
-                  const isRiskDimension = scoringResult.riskDimensions.includes(dimension)
-                  
-                  return (
-                    <div key={dimension} className={`p-4 rounded-lg ${isRiskDimension ? 'bg-red-50/50' : 'bg-muted/30'}`}>
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium">{dimension}</h4>
-                        <span className={`font-bold ${getScoreColor(score)}`}>{score}</span>
-                      </div>
-                      <Progress value={score} className={`h-2 ${isRiskDimension ? 'bg-red-100' : ''}`} />
-                      {isRiskDimension && (
-                        <p className="text-xs text-red-600 mt-2">
-                          {score <= riskThresholds.high ? "High risk area" : "Potential concern"}
-                        </p>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-            
-            <Separator />
-            
-            {/* Risk Assessment */}
-            <div>
-              <h3 className="text-lg font-medium mb-2">Risk Assessment</h3>
-              <div className="p-4 rounded-lg bg-muted">
-                <p className="mb-2">
-                  <span className="font-medium">Risk Level:</span> {scoringResult.riskLevel.charAt(0).toUpperCase() + scoringResult.riskLevel.slice(1)}
-                </p>
-                {scoringResult.riskDimensions.length > 0 ? (
-                  <>
-                    <p className="font-medium mb-1">Areas of Concern:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      {scoringResult.riskDimensions.map((dimension) => (
-                        <li key={dimension} className="text-sm">
-                          {dimension} ({scoringResult.dimensions[dimension]})
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ) : (
-                  <p className="text-green-600">No significant risk areas detected</p>
-                )}
-              </div>
-            </div>
-            
-            <div className="p-4 rounded-lg bg-blue-50 flex items-start gap-3">
-              <Brain className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
-              <div>
-                <h4 className="font-medium text-blue-800 mb-1">AI Recommendation</h4>
-                <p className="text-sm text-blue-700">
-                  {scoringResult.riskLevel === "high" ? (
-                    "This student shows significant risk factors that may require immediate attention. Consider scheduling a one-on-one counseling session to address the identified concerns."
-                  ) : scoringResult.riskLevel === "medium" ? (
-                    "This student shows some potential areas of concern. Regular check-ins and targeted interventions for the identified dimensions may be beneficial."
-                  ) : (
-                    "This student appears to be maintaining good psychological well-being. Continue to provide general support and periodic assessment."
-                  )}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export Results
-            </Button>
-            <Button onClick={saveResults}>Save to Student Profile</Button>
-          </CardFooter>
-        </Card>
-      )}
     </div>
   )
-} 
+}

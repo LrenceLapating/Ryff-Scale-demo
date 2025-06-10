@@ -14,8 +14,9 @@ import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { ChevronLeft, ChevronRight, ArrowLeft, User, School, BookOpen, GraduationCap, Bell, X, Heart, Brain, Coffee, Moon, Smile, AlertCircle, MessageSquare } from "lucide-react"
+import { ChevronLeft, ChevronRight, ArrowLeft, User, School, BookOpen, GraduationCap, Bell, X, Heart, Brain, Coffee, Moon, Smile, AlertCircle, MessageSquare, LogOut } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { useRouter } from "next/navigation"
 
 // Mock notification data
 const mockNotifications = [
@@ -229,6 +230,8 @@ interface StudentDashboardProps {
 }
 
 export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps) {
+  const router = useRouter()
+  
   // Map URL paths to tab values
   const mapUrlToTab = (url: string | undefined) => {
     if (!url) return "assessments";
@@ -346,6 +349,11 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
   const filteredResources = resourceFilter === "all" 
     ? mockResources 
     : mockResources.filter(resource => resource.type.toLowerCase() === resourceFilter.toLowerCase())
+
+  const handleLogout = () => {
+    // In a real app, this would clear authentication tokens/cookies
+    router.push("/landing")
+  }
 
   // Render the active assessment if one is in progress
   if (isAssessmentActive && activeAssessment) {
@@ -592,6 +600,11 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="flex items-center gap-2">
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </Button>
           
           <Dialog>
             <DialogTrigger asChild>

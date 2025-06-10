@@ -36,7 +36,7 @@ export function AutoReminders() {
             Auto-Reminders Configuration
           </CardTitle>
           <CardDescription>
-            Automatically notify users who haven't completed the assessment after a set period
+            Reminders are sent automatically to students who haven't taken their assessment
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -44,7 +44,9 @@ export function AutoReminders() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label className="text-base font-medium">Enable Auto-Reminders</Label>
-              <p className="text-sm text-muted-foreground">Turn auto-reminders on or off globally</p>
+              <p className="text-sm text-muted-foreground">
+                Turn auto-reminders on or off. Reminders will be sent to students who haven't taken the assessment.
+              </p>
             </div>
             <Switch checked={globalEnabled} onCheckedChange={setGlobalEnabled} />
           </div>
@@ -83,6 +85,13 @@ export function AutoReminders() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Information about how reminders work - simple text */}
+          <div className="mb-2">
+            <p className="text-sm text-muted-foreground">
+              Reminders are sent automatically to students who haven't taken their assessment yet.
+            </p>
           </div>
 
           {/* Template Editor */}

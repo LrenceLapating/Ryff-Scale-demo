@@ -80,7 +80,11 @@ const riskAlerts = [
   { id: 3, department: "CN", subscale: "Purpose in Life", score: 3.8, change: -0.1, students: 28 },
 ]
 
-export function DashboardOverview() {
+interface DashboardOverviewProps {
+  onNavigate?: (page: string, params?: Record<string, string>) => void;
+}
+
+export function DashboardOverview({ onNavigate }: DashboardOverviewProps) {
   const [timeRange, setTimeRange] = useState("month")
   const [selectedDepartment, setSelectedDepartment] = useState("all")
   const [chartView, setChartView] = useState("bar")
@@ -88,6 +92,12 @@ export function DashboardOverview() {
   const refreshData = () => {
     // In a real app, this would fetch fresh data
     alert("Data refreshed!")
+  }
+
+  const handleDepartmentClick = (department: string) => {
+    if (onNavigate) {
+      onNavigate("scoring", { department });
+    }
   }
 
   return (
@@ -117,6 +127,57 @@ export function DashboardOverview() {
         </div>
       </div>
 
+      {/* Summary Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Assessments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline justify-between">
+              <div className="text-3xl font-bold">971</div>
+              <div className="text-sm text-green-600 flex items-center">
+                <TrendingUp className="h-4 w-4 mr-1" />
+                +8.2%
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Compared to previous {timeRange}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline justify-between">
+              <div className="text-3xl font-bold">84.3%</div>
+              <div className="text-sm text-green-600 flex items-center">
+                <TrendingUp className="h-4 w-4 mr-1" />
+                +2.5%
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Compared to previous {timeRange}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Average Well-being Score</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline justify-between">
+              <div className="text-3xl font-bold">3.9/5</div>
+              <div className="text-sm text-red-600 flex items-center">
+                <TrendingDown className="h-4 w-4 mr-1" />
+                -0.1
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Compared to previous {timeRange}</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Risk Alerts */}
       <Card className="border-red-200 bg-red-50">
         <CardHeader className="pb-3">
@@ -133,7 +194,11 @@ export function DashboardOverview() {
             {riskAlerts.map((alert) => (
               <div key={alert.id} className="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm">
                 <div className="flex items-center gap-3">
-                  <Badge variant="destructive" className="text-sm px-2 py-1">
+                  <Badge 
+                    variant="destructive" 
+                    className="text-sm px-2 py-1 cursor-pointer hover:bg-red-700 transition-colors"
+                    onClick={() => handleDepartmentClick(alert.department)}
+                  >
                     {alert.department}
                   </Badge>
                   <div>
@@ -156,35 +221,6 @@ export function DashboardOverview() {
             ))}
           </div>
         </CardContent>
-        <CardFooter>
-          <Button variant="outline" className="w-full text-red-800 border-red-200 hover:bg-red-100 hover:text-red-900">
-            View Detailed Risk Report
-          </Button>
-        </CardFooter>
-      </Card>
-
-      {/* Highest Risk Subscale */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Highest-Risk Subscale</CardTitle>
-          <CardDescription>The Ryff subscale with the highest concentration of low scores</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center space-x-4">
-            <Badge variant="destructive" className="text-lg px-4 py-2">
-              Positive Relations with Others
-            </Badge>
-            <div className="text-sm text-muted-foreground">
-              <span className="font-medium">142 low scores</span> across all departments
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button variant="link" className="p-0 h-auto flex items-center">
-            View intervention strategies
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </Button>
-        </CardFooter>
       </Card>
 
       {/* Department Statistics */}
@@ -206,7 +242,6 @@ export function DashboardOverview() {
                 <TableHead>Department</TableHead>
                 <TableHead className="text-right">Total Test Takers</TableHead>
                 <TableHead className="text-right">Low Scores</TableHead>
-                <TableHead className="text-right">Risk Percentage</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -215,19 +250,6 @@ export function DashboardOverview() {
                   <TableCell className="font-medium">{dept.department}</TableCell>
                   <TableCell className="text-right">{dept.totalTestTakers}</TableCell>
                   <TableCell className="text-right">{dept.lowScores}</TableCell>
-                  <TableCell className="text-right">
-                    <Badge
-                      variant={
-                        (dept.lowScores / dept.totalTestTakers) * 100 > 15
-                          ? "destructive"
-                          : (dept.lowScores / dept.totalTestTakers) * 100 > 10
-                            ? "secondary"
-                            : "default"
-                      }
-                    >
-                      {((dept.lowScores / dept.totalTestTakers) * 100).toFixed(1)}%
-                    </Badge>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -416,57 +438,6 @@ export function DashboardOverview() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Summary Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Assessments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline justify-between">
-              <div className="text-3xl font-bold">971</div>
-              <div className="text-sm text-green-600 flex items-center">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                +8.2%
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Compared to previous {timeRange}</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline justify-between">
-              <div className="text-3xl font-bold">84.3%</div>
-              <div className="text-sm text-green-600 flex items-center">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                +2.5%
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Compared to previous {timeRange}</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Average Well-being Score</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-baseline justify-between">
-              <div className="text-3xl font-bold">3.9/5</div>
-              <div className="text-sm text-red-600 flex items-center">
-                <TrendingDown className="h-4 w-4 mr-1" />
-                -0.1
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Compared to previous {timeRange}</p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }

@@ -7,69 +7,62 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Search, Send, Eye, RefreshCw } from "lucide-react"
+import { Search, FileBarChart } from "lucide-react"
 
+// Updated status data with section instead of role, and department instead of classDept
 const statusData = [
-  { id: 1, name: "John Doe", role: "Student", classDept: "BSIT3A", status: "Completed", submissionDate: "2024-01-15" },
-  { id: 2, name: "Jane Smith", role: "Student", classDept: "BSIT3A", status: "In Progress", submissionDate: "-" },
-  { id: 3, name: "Mike Johnson", role: "Student", classDept: "BSCS2B", status: "Not Started", submissionDate: "-" },
-  { id: 4, name: "Sarah Wilson", role: "Faculty", classDept: "CCS", status: "Completed", submissionDate: "2024-01-14" },
-  { id: 5, name: "Tom Brown", role: "Student", classDept: "BSIT4A", status: "Not Started", submissionDate: "-" },
-  { id: 6, name: "Lisa Davis", role: "Student", classDept: "BSCS1A", status: "In Progress", submissionDate: "-" },
-  { id: 7, name: "David Lee", role: "Faculty", classDept: "CN", status: "Completed", submissionDate: "2024-01-13" },
+  { id: 1, name: "John Doe", section: "BSIT3A", department: "CCS", status: "Completed", submissionDate: "2024-01-15" },
+  { id: 2, name: "Jane Smith", section: "BSIT3A", department: "CCS", status: "In Progress", submissionDate: "-" },
+  { id: 3, name: "Mike Johnson", section: "BSCS2B", department: "CCS", status: "Not Started", submissionDate: "-" },
+  { id: 4, name: "Sarah Wilson", section: "Faculty", department: "CCS", status: "Completed", submissionDate: "2024-01-14" },
+  { id: 5, name: "Tom Brown", section: "BSIT4A", department: "CCS", status: "Not Started", submissionDate: "-" },
+  { id: 6, name: "Lisa Davis", section: "BSCS1A", department: "CCS", status: "In Progress", submissionDate: "-" },
+  { id: 7, name: "David Lee", section: "Faculty", department: "CN", status: "Completed", submissionDate: "2024-01-13" },
   {
     id: 8,
     name: "Emma Taylor",
-    role: "Student",
-    classDept: "BSIT2B",
+    section: "BSIT2B",
+    department: "CCS",
     status: "Completed",
     submissionDate: "2024-01-16",
   },
+  { id: 9, name: "Robert Chen", section: "BSCE3A", department: "COE", status: "Completed", submissionDate: "2024-01-14" },
+  { id: 10, name: "Maria Garcia", section: "BSCE2B", department: "COE", status: "In Progress", submissionDate: "-" },
+  { id: 11, name: "James Wilson", section: "BSBA3A", department: "CBA", status: "Completed", submissionDate: "2024-01-15" },
+  { id: 12, name: "Patricia Lopez", section: "BSBA2B", department: "CBA", status: "Not Started", submissionDate: "-" },
+  { id: 13, name: "Michael Brown", section: "BSPS2A", department: "CAS", status: "Completed", submissionDate: "2024-01-16" },
+  { id: 14, name: "Jennifer Davis", section: "BSED3B", department: "CAS", status: "In Progress", submissionDate: "-" },
 ]
+
+// Extract unique departments and year-section combinations
+const departments = Array.from(new Set(statusData.map(item => item.department)))
+const yearSections = Array.from(new Set(statusData.map(item => item.section)))
 
 export function StatusMonitor() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState("all")
+  const [yearSectionFilter, setYearSectionFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [groupFilter, setGroupFilter] = useState("all")
-  const [selectedItems, setSelectedItems] = useState<number[]>([])
+  const [departmentFilter, setDepartmentFilter] = useState("all")
 
   const filteredData = statusData.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.classDept.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = roleFilter === "all" || item.role === roleFilter
+      item.section.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesYearSection = yearSectionFilter === "all" || item.section === yearSectionFilter
     const matchesStatus = statusFilter === "all" || item.status === statusFilter
-    const matchesGroup = groupFilter === "all" || item.classDept.includes(groupFilter)
+    const matchesDepartment = departmentFilter === "all" || item.department === departmentFilter
 
-    return matchesSearch && matchesRole && matchesStatus && matchesGroup
+    return matchesSearch && matchesYearSection && matchesStatus && matchesDepartment
   })
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedItems(filteredData.map((item) => item.id))
-    } else {
-      setSelectedItems([])
-    }
-  }
-
-  const handleSelectItem = (id: number, checked: boolean) => {
-    if (checked) {
-      setSelectedItems([...selectedItems, id])
-    } else {
-      setSelectedItems(selectedItems.filter((item) => item !== id))
-    }
-  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Completed":
-        return <Badge variant="default">Completed</Badge>
+        return <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-100">Completed</Badge>
       case "In Progress":
-        return <Badge variant="secondary">In Progress</Badge>
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">In Progress</Badge>
       case "Not Started":
-        return <Badge variant="destructive">Not Started</Badge>
+        return <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">Not Started</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -77,12 +70,48 @@ export function StatusMonitor() {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Assessment Status Monitor</CardTitle>
-          <CardDescription>Monitor assessment completion progress across groups</CardDescription>
+      <Card className="shadow-sm border-slate-200">
+        <CardHeader className="bg-slate-50 rounded-t-lg">
+          <CardTitle className="flex items-center gap-2 text-slate-800">
+            <FileBarChart className="h-5 w-5 text-slate-600" />
+            Assessment Status Monitor
+          </CardTitle>
+          <CardDescription>
+            Monitor assessment completion progress across departments and sections
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 pt-6">
+          {/* Summary Stats - Enhanced Version - Moved to top */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+            <div className="p-4 rounded-lg bg-green-50 border border-green-100 text-center">
+              <div className="text-2xl font-bold text-green-700">
+                {filteredData.filter((item) => item.status === "Completed").length}
+              </div>
+              <div className="text-sm text-green-600">Completed</div>
+            </div>
+            <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-100 text-center">
+              <div className="text-2xl font-bold text-yellow-700">
+                {filteredData.filter((item) => item.status === "In Progress").length}
+              </div>
+              <div className="text-sm text-yellow-600">In Progress</div>
+            </div>
+            <div className="p-4 rounded-lg bg-red-50 border border-red-100 text-center">
+              <div className="text-2xl font-bold text-red-700">
+                {filteredData.filter((item) => item.status === "Not Started").length}
+              </div>
+              <div className="text-sm text-red-600">Not Started</div>
+            </div>
+            <div className="p-4 rounded-lg bg-blue-50 border border-blue-100 text-center">
+              <div className="text-2xl font-bold text-blue-700">
+                {Math.round(
+                  (filteredData.filter((item) => item.status === "Completed").length / filteredData.length) * 100
+                ) || 0}
+                %
+              </div>
+              <div className="text-sm text-blue-600">Completion Rate</div>
+            </div>
+          </div>
+          
           {/* Search and Filters */}
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
@@ -94,14 +123,26 @@ export function StatusMonitor() {
                 className="pl-10"
               />
             </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full md:w-[150px]">
-                <SelectValue placeholder="Role" />
+            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Department" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="Student">Student</SelectItem>
-                <SelectItem value="Faculty">Faculty</SelectItem>
+                <SelectItem value="all">All Departments</SelectItem>
+                {departments.map(dept => (
+                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={yearSectionFilter} onValueChange={setYearSectionFilter}>
+              <SelectTrigger className="w-full md:w-[150px]">
+                <SelectValue placeholder="Year & Section" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sections</SelectItem>
+                {yearSections.map(section => (
+                  <SelectItem key={section} value={section}>{section}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -115,120 +156,40 @@ export function StatusMonitor() {
                 <SelectItem value="Not Started">Not Started</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={groupFilter} onValueChange={setGroupFilter}>
-              <SelectTrigger className="w-full md:w-[150px]">
-                <SelectValue placeholder="Group" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Groups</SelectItem>
-                <SelectItem value="BSIT">BSIT</SelectItem>
-                <SelectItem value="BSCS">BSCS</SelectItem>
-                <SelectItem value="CCS">CCS</SelectItem>
-                <SelectItem value="CN">CN</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
-          {/* Bulk Actions */}
-          {selectedItems.length > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <span className="text-sm font-medium">{selectedItems.length} item(s) selected</span>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4" />
-                  Resend Assessment
-                </Button>
-                <Button size="sm" variant="outline" className="flex items-center gap-2">
-                  <Send className="h-4 w-4" />
-                  Send Reminder
-                </Button>
-                <Button size="sm" variant="outline" className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  View Details
-                </Button>
-              </div>
-            </div>
-          )}
-
           {/* Status Table */}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox
-                    checked={selectedItems.length === filteredData.length && filteredData.length > 0}
-                    onCheckedChange={handleSelectAll}
-                  />
-                </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Class/Dept</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Submission Date</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredData.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedItems.includes(item.id)}
-                      onCheckedChange={(checked) => handleSelectItem(item.id, checked as boolean)}
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell>{item.role}</TableCell>
-                  <TableCell>{item.classDept}</TableCell>
-                  <TableCell>{getStatusBadge(item.status)}</TableCell>
-                  <TableCell>{item.submissionDate}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {item.status === "Completed" ? (
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="outline">
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
+          <div className="rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader className="bg-slate-50">
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Section</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Submission Date</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          {/* Summary Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {filteredData.filter((item) => item.status === "Completed").length}
-              </div>
-              <div className="text-sm text-muted-foreground">Completed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">
-                {filteredData.filter((item) => item.status === "In Progress").length}
-              </div>
-              <div className="text-sm text-muted-foreground">In Progress</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">
-                {filteredData.filter((item) => item.status === "Not Started").length}
-              </div>
-              <div className="text-sm text-muted-foreground">Not Started</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {Math.round(
-                  (filteredData.filter((item) => item.status === "Completed").length / filteredData.length) * 100,
-                ) || 0}
-                %
-              </div>
-              <div className="text-sm text-muted-foreground">Completion Rate</div>
-            </div>
+              </TableHeader>
+              <TableBody>
+                {filteredData.length > 0 ? (
+                  filteredData.map((item) => (
+                    <TableRow key={item.id} className="hover:bg-slate-50">
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell>{item.section}</TableCell>
+                      <TableCell>{item.department}</TableCell>
+                      <TableCell>{getStatusBadge(item.status)}</TableCell>
+                      <TableCell>{item.submissionDate}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No assessments found matching your filters
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

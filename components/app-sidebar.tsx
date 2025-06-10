@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { BarChart3, FileText, Settings, Users, Calendar, ChevronDown, MessageSquare, BookOpen, User, Heart, Brain, Calculator } from "lucide-react"
+import { BarChart3, FileText, Settings, Users, Calendar, ChevronDown, MessageSquare, BookOpen, User, Heart, Brain, Calculator, Building, UserPlus, Cog, School } from "lucide-react"
 import { LucideIcon } from "lucide-react"
 
 import {
@@ -78,17 +78,31 @@ const counselorNavigationItems: NavigationItem[] = [
     title: "Settings",
     url: "/settings",
     icon: Settings,
+  }
+]
+
+// Super Admin navigation items
+const superAdminNavigationItems: NavigationItem[] = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: BarChart3,
   },
   {
-    title: "View As",
-    icon: Users,
-    items: [
-      {
-        title: "Student View",
-        url: "/student-view",
-      }
-    ],
+    title: "School Management",
+    url: "/school-management",
+    icon: Building,
   },
+  {
+    title: "User Management",
+    url: "/user-management",
+    icon: UserPlus,
+  },
+  {
+    title: "System Settings",
+    url: "/system-settings",
+    icon: Cog,
+  }
 ]
 
 // Student navigation items
@@ -119,7 +133,9 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...props }: AppSidebarProps) {
   // Select navigation items based on user role
   const navigationItems = 
-    userRole === "student" ? studentNavigationItems : counselorNavigationItems
+    userRole === "student" ? studentNavigationItems : 
+    userRole === "superadmin" ? superAdminNavigationItems :
+    counselorNavigationItems
 
   // Handle navigation based on user role
   const handleNavigation = (url: string) => {
@@ -129,6 +145,9 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
     // For student role, just use the path as is
     if (userRole === "student") {
       onNavigate?.(path);
+    } else if (userRole === "superadmin") {
+      // For super admin role, handle the paths
+      onNavigate?.(path.replace("/", ""));
     } else {
       // For counselor role, handle the nested paths
       if (path.includes("ryff/")) {
@@ -138,6 +157,18 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
       } else {
         onNavigate?.(path.replace("/", ""));
       }
+    }
+  };
+
+  // Get the appropriate role label
+  const getRoleLabel = () => {
+    switch (userRole) {
+      case "student":
+        return "Student Menu";
+      case "superadmin":
+        return "Super Admin Menu";
+      default:
+        return "Counselor Menu";
     }
   };
 
@@ -167,7 +198,9 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-semibold">Ryff PWB</span>
                 <span className="text-xs">
-                  {userRole === "student" ? "Student Portal" : "Counselor Portal"}
+                  {userRole === "student" ? "Student Portal" : 
+                   userRole === "superadmin" ? "Super Admin Portal" : 
+                   "Counselor Portal"}
                 </span>
               </div>
             </SidebarMenuButton>
@@ -177,7 +210,7 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            {userRole === "student" ? "Student Menu" : "Counselor Menu"}
+            {getRoleLabel()}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
