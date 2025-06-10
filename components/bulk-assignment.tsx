@@ -539,43 +539,41 @@ export function BulkAssignment() {
   if (showSuccess) {
     return (
       <div className="space-y-6">
-        <Card>
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+        <Card className="max-w-3xl mx-auto shadow-md">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4">
               <Check className="h-8 w-8 text-green-600" />
             </div>
-            <CardTitle className="text-2xl text-green-600">Assessment Successful!</CardTitle>
-            <CardDescription>Your Ryff assessment has been distributed successfully</CardDescription>
+            <CardTitle className="text-2xl text-green-600 font-semibold">Assessment Successful!</CardTitle>
+            <CardDescription className="text-base">Your Ryff assessment has been distributed successfully</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-3xl font-bold text-green-600">{assignmentResults.total}</div>
-                <div className="text-sm text-muted-foreground">Total Recipients</div>
-              </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-3xl font-bold text-blue-600">{assignmentResults.successful}</div>
-                <div className="text-sm text-muted-foreground">Successfully Sent</div>
-              </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg">
-                <div className="text-3xl font-bold text-red-600">{assignmentResults.failed}</div>
-                <div className="text-sm text-muted-foreground">Failed</div>
+            <div className="flex justify-center">
+              <div className="text-center p-6 bg-slate-50 rounded-lg border border-slate-100 w-full max-w-md">
+                <div className="text-4xl font-bold text-slate-800 mb-1">{assignmentResults.total}</div>
+                <div className="text-sm text-slate-600 font-medium">Total Recipients</div>
               </div>
             </div>
 
-            <div className="text-center space-y-4">
-              <p className="text-muted-foreground">
+            <div className="text-center space-y-4 pt-2">
+              <p className="text-slate-600">
                 Notifications have been sent via email and in-app notifications. Recipients will receive their
                 assessment links shortly.
               </p>
-              <div className="flex gap-3 justify-center">
-                <Button onClick={() => setShowSuccess(false)}>Create New Assessment</Button>
+              <div className="flex gap-3 justify-center pt-2">
+                <Button 
+                  onClick={() => setShowSuccess(false)}
+                  className="px-6"
+                >
+                  Create New Assessment
+                </Button>
                 <Button
                   variant="outline"
                   onClick={() => {
                     setActiveTab("history")
                     setShowSuccess(false)
                   }}
+                  className="px-6"
                 >
                   View History
                 </Button>
@@ -645,7 +643,7 @@ export function BulkAssignment() {
                       <Label htmlFor="select-all-departments" className="text-sm">
                         Select All Departments
                       </Label>
-              </div>
+                </div>
                   </div>
                 </div>
                 <div className="border rounded-md p-4 space-y-3">
