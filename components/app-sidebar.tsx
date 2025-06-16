@@ -65,7 +65,7 @@ const counselorNavigationItems: NavigationItem[] = [
     icon: Users,
   },
   {
-    title: "Guidance Feedback",
+    title: "AI Feedback",
     url: "/ai-feedback",
     icon: Brain,
   },
@@ -121,6 +121,11 @@ const studentNavigationItems: NavigationItem[] = [
     title: "Guidance Feedback",
     url: "/feedback",
     icon: MessageSquare,
+  },
+  {
+    title: "Settings",
+    url: "/settings",
+    icon: Settings,
   }
 ]
 
@@ -173,31 +178,17 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
   };
 
   return (
-    <Sidebar {...props}>
-      <SidebarHeader>
+    <Sidebar className="border-r border-slate-200 bg-slate-800" {...props}>
+      <SidebarHeader className="border-b border-slate-700">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" onClick={() => onNavigate?.("dashboard")} className="cursor-pointer">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="size-8 text-primary"
-                >
-                  <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-                  <path d="M9 12h6" />
-                  <path d="M12 9v6" />
-                  <path d="M7 15l10-6" />
-                </svg>
+            <SidebarMenuButton size="lg" onClick={() => onNavigate?.("dashboard")} className="cursor-pointer hover:bg-slate-700">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden bg-teal-600">
+                <Brain className="size-6 text-white" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-semibold">Ryff PWB</span>
-                <span className="text-xs">
+                <span className="font-semibold text-white">Ryff PWB</span>
+                <span className="text-xs text-slate-300">
                   {userRole === "student" ? "Student Portal" : 
                    userRole === "superadmin" ? "Super Admin Portal" : 
                    "Counselor Portal"}
@@ -209,7 +200,7 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>
+          <SidebarGroupLabel className="text-slate-400 font-medium">
             {getRoleLabel()}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -219,10 +210,10 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
                   {item.items ? (
                     <Collapsible defaultOpen className="group/collapsible">
                       <CollapsibleTrigger asChild>
-                        <SidebarMenuButton>
-                          <item.icon />
+                        <SidebarMenuButton className="text-slate-200 hover:bg-slate-700">
+                          <item.icon className="text-slate-400" />
                           <span>{item.title}</span>
-                          <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                          <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180 text-slate-400" />
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
@@ -232,7 +223,11 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
                               <SidebarMenuSubButton
                                 isActive={currentPage === subItem.url.replace("/ryff/", "").replace("/", "")}
                                 onClick={() => handleNavigation(subItem.url)}
-                                className="cursor-pointer"
+                                className={`cursor-pointer hover:bg-slate-700 ${
+                                  currentPage === subItem.url.replace("/ryff/", "").replace("/", "") 
+                                  ? "bg-teal-700 text-white" 
+                                  : "text-slate-300"
+                                }`}
                               >
                                 {subItem.title}
                               </SidebarMenuSubButton>
@@ -245,9 +240,13 @@ export function AppSidebar({ onNavigate, currentPage, userRole = "admin", ...pro
                     <SidebarMenuButton
                       isActive={currentPage === item.url?.replace("/", "")}
                       onClick={() => item.url && handleNavigation(item.url)}
-                      className="cursor-pointer"
+                      className={`cursor-pointer hover:bg-slate-700 ${
+                        currentPage === item.url?.replace("/", "") 
+                        ? "bg-teal-700 text-white" 
+                        : "text-slate-200"
+                      }`}
                     >
-                      <item.icon />
+                      <item.icon className={currentPage === item.url?.replace("/", "") ? "text-white" : "text-slate-400"} />
                       <span>{item.title}</span>
                     </SidebarMenuButton>
                   )}

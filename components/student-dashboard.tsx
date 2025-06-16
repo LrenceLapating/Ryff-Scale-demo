@@ -18,6 +18,16 @@ import { ChevronLeft, ChevronRight, ArrowLeft, User, School, BookOpen, Graduatio
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { useRouter } from "next/navigation"
 
+// Ryff Scale dimensions
+const dimensions = [
+  "Autonomy",
+  "Environmental Mastery",
+  "Personal Growth",
+  "Positive Relations",
+  "Purpose in Life",
+  "Self-Acceptance"
+];
+
 // Mock notification data
 const mockNotifications = [
   {
@@ -89,39 +99,42 @@ const mockAssessments = [
     status: "pending",
     dueDate: "2023-11-15",
     progress: 0,
+    description: "Comprehensive psychological well-being assessment based on Ryff's six dimensions model."
   },
   {
     id: "2",
-    title: "Semester Check-in",
+    title: "Ryff Brief Scale (18-item)",
     status: "completed",
-    completedDate: "2023-10-05",
+    completedDate: "2023-10-10",
     progress: 100,
+    description: "Short-form assessment focusing on core aspects of psychological well-being."
   },
   {
     id: "3",
-    title: "Academic Stress Assessment",
-    status: "in-progress",
-    dueDate: "2023-11-20",
-    progress: 45,
-  },
+    title: "Dimension-Specific Assessment: Self-Acceptance",
+    status: "pending",
+    dueDate: "2023-11-22",
+    progress: 0,
+    description: "Targeted assessment focusing on the Self-Acceptance dimension of well-being."
+  }
 ]
 
 const mockResults = [
   {
     id: "2",
-    title: "Semester Check-in",
-    completedDate: "2023-10-05",
+    title: "Ryff Brief Scale (18-item)",
+    completedDate: "2023-10-10",
     dimensions: [
       { name: "Autonomy", score: 78 },
       { name: "Environmental Mastery", score: 65 },
       { name: "Personal Growth", score: 82 },
       { name: "Positive Relations", score: 70 },
       { name: "Purpose in Life", score: 75 },
-      { name: "Self-Acceptance", score: 68 },
+      { name: "Self-Acceptance", score: 48 },
     ],
-    overallScore: 73,
-    counselorNotes: "Good progress since last assessment. Consider focusing on Environmental Mastery strategies.",
-  },
+    overallScore: 70,
+    counselorNotes: "Your results show strong scores in Personal Growth and Autonomy. Consider focusing on improving Self-Acceptance through the recommended strategies in your intervention plan.",
+  }
 ]
 
 const mockAppointments = [
@@ -195,33 +208,111 @@ const mockAssessmentQuestions = [
 const mockResources = [
   {
     id: "1",
-    title: "Understanding Psychological Well-being",
+    title: "Understanding the Six Dimensions of Well-being",
     type: "Article",
     source: "University Counseling Center",
     link: "#",
   },
   {
     id: "2",
-    title: "Stress Management Techniques",
-    type: "Video",
-    source: "Student Health Services",
-    link: "#",
-  },
-  {
-    id: "3",
-    title: "Improving Environmental Mastery",
+    title: "Self-Acceptance: Exercises for Growth",
     type: "Worksheet",
     source: "Dr. Sarah Johnson",
     link: "#",
   },
   {
-    id: "4",
-    title: "Building Positive Relationships",
+    id: "3",
+    title: "Building Positive Relations Workshop",
     type: "Workshop",
     source: "Student Life Center",
     date: "November 25, 2023",
     link: "#",
   },
+  {
+    id: "4",
+    title: "Purpose in Life: Finding Your Path",
+    type: "Video",
+    source: "Ryff Institute",
+    link: "#",
+  },
+  {
+    id: "5",
+    title: "Personal Growth Journal Template",
+    type: "Download",
+    source: "Wellness Center",
+    link: "#",
+  },
+]
+
+// New - Ryff dimension goals for students
+const mockDimensionGoals = [
+  {
+    id: "1",
+    dimension: "Self-Acceptance",
+    goal: "Practice positive self-affirmations daily",
+    progress: 30,
+    dueDate: "2023-12-01"
+  },
+  {
+    id: "2",
+    dimension: "Positive Relations",
+    goal: "Have meaningful conversations with two friends each week",
+    progress: 60,
+    dueDate: "2023-11-30"
+  },
+  {
+    id: "3",
+    dimension: "Personal Growth",
+    goal: "Read one personal development book this month",
+    progress: 75,
+    dueDate: "2023-11-20"
+  }
+]
+
+// New - Ryff dimension-specific reflections
+const mockReflections = [
+  {
+    id: "1",
+    date: "2023-10-15",
+    dimension: "Self-Acceptance",
+    content: "Today I found it difficult to acknowledge my achievements. I need to work on recognizing my strengths more consistently.",
+    mood: "😐"
+  },
+  {
+    id: "2",
+    date: "2023-10-25",
+    dimension: "Personal Growth",
+    content: "Tried a new skill today and enjoyed the learning process. Feeling proud of stepping out of my comfort zone.",
+    mood: "😊"
+  }
+]
+
+// New - Wellness tips specific to Ryff dimensions
+const wellnessTips = [
+  {
+    dimension: "Autonomy",
+    tips: [
+      "Practice making independent decisions daily",
+      "Set boundaries in relationships",
+      "Reflect on your personal values regularly"
+    ]
+  },
+  {
+    dimension: "Environmental Mastery",
+    tips: [
+      "Organize your physical space",
+      "Create a weekly schedule that balances responsibilities",
+      "Take control of one challenging situation this week"
+    ]
+  },
+  {
+    dimension: "Self-Acceptance",
+    tips: [
+      "Write down three things you like about yourself daily",
+      "Practice self-compassion when facing setbacks",
+      "Challenge negative self-talk with evidence"
+    ]
+  }
 ]
 
 interface StudentDashboardProps {
@@ -240,6 +331,7 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
     if (url === "assessment" || url === "assessments") return "assessments";
     if (url === "results") return "results";
     if (url === "feedback") return "feedback";
+    if (url === "settings") return "settings";
     
     // Default to assessments tab
     return "assessments";
@@ -265,6 +357,15 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
     energy: 4,
   });
   const [showCompletionScreen, setShowCompletionScreen] = useState(false)
+  const [selectedWellnessTip, setSelectedWellnessTip] = useState<string>("Autonomy");
+  const [reflectionText, setReflectionText] = useState("");
+  const [reflectionDimension, setReflectionDimension] = useState("Self-Acceptance");
+  const [reflectionMood, setReflectionMood] = useState("😐");
+  const [showReflectionDialog, setShowReflectionDialog] = useState(false);
+  const [showGoalDialog, setShowGoalDialog] = useState(false);
+  const [goalTitle, setGoalTitle] = useState("");
+  const [goalDimension, setGoalDimension] = useState("Autonomy");
+  const [goalDueDate, setGoalDueDate] = useState<Date | undefined>(undefined);
   
   // Update selected tab when currentPage changes (from sidebar navigation)
   useEffect(() => {
@@ -371,6 +472,28 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
     setShowCompletionScreen(false)
     setSelectedTab("assessments")
   }
+
+  // Add a function to handle reflection submission
+  const handleSubmitReflection = () => {
+    if (reflectionText.trim() === "") return;
+    
+    // In a real app, this would send the reflection to the server
+    setShowReflectionDialog(false);
+    setReflectionText("");
+    
+    // Show confirmation toast or notification in a real app
+  };
+
+  // Add a function to handle goal submission
+  const handleSubmitGoal = () => {
+    if (goalTitle.trim() === "") return;
+    
+    // In a real app, this would send the goal to the server
+    setShowGoalDialog(false);
+    setGoalTitle("");
+    
+    // Show confirmation toast or notification in a real app
+  };
 
   // Render the active assessment if one is in progress
   if (isAssessmentActive && activeAssessment) {
@@ -567,6 +690,9 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
+                <div className="text-sm text-slate-600 mb-4">
+                  {assessment.description}
+                </div>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-slate-600">Progress</span>
@@ -587,6 +713,119 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
               </CardFooter>
             </Card>
           ))}
+
+          {/* New section for Dimension Goals */}
+          <Card className="border-slate-200 shadow-sm overflow-hidden mt-8">
+            <CardHeader className="bg-slate-50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl text-slate-800">Dimension Goals</CardTitle>
+                  <CardDescription>Track your personal well-being dimension goals</CardDescription>
+                </div>
+                <Button size="sm" onClick={() => setShowGoalDialog(true)}>
+                  Add Goal
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-6">
+                {mockDimensionGoals.map((goal) => (
+                  <div key={goal.id} className="border rounded-md p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 className="font-medium">{goal.goal}</h4>
+                        <Badge variant="outline" className="mt-1">{goal.dimension}</Badge>
+                      </div>
+                      <div className="text-sm text-slate-500">Due {goal.dueDate}</div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Progress</span>
+                        <span>{goal.progress}%</span>
+                      </div>
+                      <Progress value={goal.progress} className="h-1.5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* New Daily Reflection section */}
+          <Card className="border-slate-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl text-slate-800">Dimension Reflections</CardTitle>
+                  <CardDescription>Record thoughts and progress on specific dimensions</CardDescription>
+                </div>
+                <Button size="sm" onClick={() => setShowReflectionDialog(true)}>
+                  Add Reflection
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {mockReflections.length > 0 ? (
+                <div className="space-y-4">
+                  {mockReflections.map((reflection) => (
+                    <div key={reflection.id} className="bg-slate-50 rounded-md p-4 border border-slate-200">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            {reflection.dimension}
+                          </Badge>
+                          <span className="text-sm text-slate-500">{reflection.date}</span>
+                        </div>
+                        <div className="text-xl">{reflection.mood}</div>
+                      </div>
+                      <p className="text-sm mt-2">{reflection.content}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-slate-500">
+                  No reflections yet. Add your first reflection to track your well-being journey.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Wellness Tips Section */}
+          <Card className="border-slate-200 shadow-sm overflow-hidden">
+            <CardHeader className="bg-slate-50">
+              <CardTitle className="text-xl text-slate-800">Dimension Wellness Tips</CardTitle>
+              <CardDescription>Practical strategies to improve specific dimensions</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="mb-4">
+                <Label htmlFor="dimensionSelect">Select Dimension</Label>
+                <select 
+                  id="dimensionSelect" 
+                  value={selectedWellnessTip}
+                  onChange={(e) => setSelectedWellnessTip(e.target.value)}
+                  className="w-full mt-1 rounded-md border border-slate-300 p-2"
+                >
+                  {wellnessTips.map(tip => (
+                    <option key={tip.dimension} value={tip.dimension}>{tip.dimension}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="bg-blue-50 rounded-md p-4 border border-blue-100">
+                <h4 className="font-medium text-blue-800 mb-2">Tips for {selectedWellnessTip}</h4>
+                <ul className="space-y-2">
+                  {wellnessTips.find(t => t.dimension === selectedWellnessTip)?.tips.map((tip, index) => (
+                    <li key={index} className="flex items-start gap-2 text-sm text-blue-700">
+                      <div className="bg-blue-200 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                        {index + 1}
+                      </div>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -670,400 +909,267 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
               <div className="bg-primary/10 p-2 rounded-full mr-3">
                 <MessageSquare className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-xl text-slate-800">AI Feedback</CardTitle>
+              <CardTitle className="text-xl text-slate-800">Guidance Feedback</CardTitle>
             </div>
             <CardDescription className="text-slate-500">
-              Review the AI-generated feedback and interventions for your well-being assessment results
+              Review personalized guidance and intervention strategies for your well-being assessment
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <Tabs defaultValue="analysis" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-8">
-                <TabsTrigger value="analysis">Analysis</TabsTrigger>
-                <TabsTrigger value="intervention">Intervention</TabsTrigger>
-              </TabsList>
-
-              {/* Analysis Tab Content */}
-              <TabsContent value="analysis" className="mt-0 focus:outline-none">
-                <div className="space-y-6">
-                  <div className="bg-blue-50/50 rounded-md border border-blue-100 p-4">
-                    <h3 className="text-md font-semibold mb-2">Analysis</h3>
-                    <p className="text-sm">
-                      Mike's assessment shows a critically low score in the Self-Acceptance dimension, which is significantly out of alignment with his otherwise moderate to high scores in other areas.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-amber-50/50 rounded-md border border-amber-100 p-4">
-                    <h3 className="text-md font-semibold mb-2">Recommendation</h3>
-                    <p className="text-sm">
-                      This pattern suggests Mike may be experiencing specific issues related to self-image, self-worth, or self-criticism, despite functioning well in other areas of psychological wellbeing.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-green-50/50 rounded-md border border-green-100 p-4">
-                    <h3 className="text-md font-semibold mb-2">Suggestion</h3>
-                    <p className="text-sm">
-                      I recommend prioritizing a one-on-one session with Mike to explore the factors contributing to his low self-acceptance. Consider compassion-focused techniques and strengths-based approaches to help improve his relationship with himself.
-                    </p>
-                  </div>
+            <div className="space-y-8">
+              {/* Overall Wellbeing Strategy */}
+              <div className="border border-slate-200 rounded-md p-5">
+                <h3 className="font-semibold text-lg text-slate-800 flex items-center gap-2 mb-3">
+                  <Heart className="text-blue-600 h-5 w-5" />
+                  Overall Wellbeing Strategy
+                </h3>
+                <p className="text-slate-700 mb-4">
+                  Based on your assessment profile, focusing on building self-acceptance while leveraging your strength in purpose in life could significantly improve your overall psychological wellbeing.
+                </p>
+                
+                <h4 className="text-sm font-medium mt-4 text-slate-700">Recommended Steps:</h4>
+                <ul className="mt-2 space-y-3">
+                  <li className="flex items-start gap-3">
+                    <div className="bg-blue-100 text-blue-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      1
+                    </div>
+                    <span className="text-slate-700">Schedule a one-on-one session with your counselor to discuss your assessment results</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="bg-blue-100 text-blue-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      2
+                    </div>
+                    <span className="text-slate-700">Set specific, measurable goals related to your areas of improvement</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="bg-blue-100 text-blue-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      3
+                    </div>
+                    <span className="text-slate-700">Track your progress weekly using the reflection journal provided by your counselor</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <h3 className="font-semibold text-lg mt-4">Dimension-Specific Strategies</h3>
+              
+              {/* Building Self-Acceptance */}
+              <div className="border border-slate-200 rounded-md p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="text-red-600 h-5 w-5" />
+                  <h3 className="font-semibold text-lg">Building Self-Acceptance</h3>
                 </div>
-              </TabsContent>
-
-              {/* Intervention Tab Content - Matching the counselor view exactly */}
-              <TabsContent value="intervention" className="mt-0 focus:outline-none">
-                <div className="space-y-8">
-                  {/* Overall Wellbeing Strategy */}
-                  <div className="border border-slate-200 rounded-md">
-                    <div className="flex items-start p-4">
-                      <div className="mr-3 mt-0.5">
-                        <input type="checkbox" checked className="h-4 w-4" readOnly />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-2">
-                            <Heart className="text-blue-600 h-4 w-4" />
-                            <h3 className="font-semibold">Overall Wellbeing Strategy</h3>
-                          </div>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <p className="text-sm mt-1">
-                          Based on your assessment profile, focusing on building self-acceptance while leveraging your strength in purpose in life could significantly improve your overall psychological wellbeing.
-                        </p>
-                        
-                        <h4 className="text-sm font-medium mt-4">Recommended Steps:</h4>
-                        <ul className="mt-2 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <div className="bg-blue-100 text-blue-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              1
-                            </div>
-                            <span className="text-sm">Schedule a one-on-one session with your counselor to discuss your assessment results</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-blue-100 text-blue-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              2
-                            </div>
-                            <span className="text-sm">Set specific, measurable goals related to your areas of improvement</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-blue-100 text-blue-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              3
-                            </div>
-                            <span className="text-sm">Track your progress weekly using the reflection journal provided by your counselor</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <h3 className="font-semibold text-lg mt-4">Dimension-Specific Strategies</h3>
-                  
-                  {/* Building Self-Acceptance */}
-                  <div className="border border-slate-200 rounded-md">
-                    <div className="flex items-start p-4">
-                      <div className="mr-3 mt-0.5">
-                        <input type="checkbox" checked className="h-4 w-4" readOnly />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <AlertCircle className="text-red-600 h-4 w-4" />
-                              <h3 className="font-semibold">Building Self-Acceptance</h3>
-                            </div>
-                            <div className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-sm inline-block mt-1">
-                              Needs attention
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-sm mt-2">
-                          Your score in Self-Acceptance indicates an opportunity for growth. These strategies can help strengthen this dimension:
-                        </p>
-                        
-                        <ul className="mt-4 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <div className="bg-red-100 text-red-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              1
-                            </div>
-                            <span className="text-sm">Practice daily self-compassion exercises</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-red-100 text-red-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              2
-                            </div>
-                            <span className="text-sm">Challenge negative self-talk with evidence-based alternatives</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-red-100 text-red-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              3
-                            </div>
-                            <span className="text-sm">Create a list of your strengths and review it regularly</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Enhancing Positive Relations */}
-                  <div className="border border-slate-200 rounded-md">
-                    <div className="flex items-start p-4">
-                      <div className="mr-3 mt-0.5">
-                        <input type="checkbox" checked className="h-4 w-4" readOnly />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <BarChart className="text-amber-600 h-4 w-4" />
-                              <h3 className="font-semibold">Enhancing Positive Relations</h3>
-                            </div>
-                            <div className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-sm inline-block mt-1">
-                              Moderate
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-sm mt-2">
-                          Your score in Positive Relations shows a moderate level. These strategies can help strengthen this dimension further:
-                        </p>
-                        
-                        <ul className="mt-4 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <div className="bg-amber-100 text-amber-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              1
-                            </div>
-                            <span className="text-sm">Deepen existing relationships through more meaningful conversations</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-amber-100 text-amber-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              2
-                            </div>
-                            <span className="text-sm">Practice expressing appreciation to others regularly</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-amber-100 text-amber-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              3
-                            </div>
-                            <span className="text-sm">Work on conflict resolution skills</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Enhancing Autonomy */}
-                  <div className="border border-slate-200 rounded-md">
-                    <div className="flex items-start p-4">
-                      <div className="mr-3 mt-0.5">
-                        <input type="checkbox" checked className="h-4 w-4" readOnly />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <BarChart className="text-amber-600 h-4 w-4" />
-                              <h3 className="font-semibold">Enhancing Autonomy</h3>
-                            </div>
-                            <div className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-sm inline-block mt-1">
-                              Moderate
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-sm mt-2">
-                          Your score in Autonomy shows a moderate level. These strategies can help strengthen this dimension further:
-                        </p>
-                        
-                        <ul className="mt-4 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <div className="bg-amber-100 text-amber-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              1
-                            </div>
-                            <span className="text-sm">Reflect on instances where you successfully asserted your values</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-amber-100 text-amber-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              2
-                            </div>
-                            <span className="text-sm">Practice respectfully disagreeing in low-stakes situations</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-amber-100 text-amber-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              3
-                            </div>
-                            <span className="text-sm">Identify one area where you can make more independent choices</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Leveraging Your Strength in Personal Growth */}
-                  <div className="border border-slate-200 rounded-md">
-                    <div className="flex items-start p-4">
-                      <div className="mr-3 mt-0.5">
-                        <input type="checkbox" checked className="h-4 w-4" readOnly />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <Heart className="text-green-600 h-4 w-4" />
-                              <h3 className="font-semibold">Leveraging Your Strength in Personal Growth</h3>
-                            </div>
-                            <div className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-sm inline-block mt-1">
-                              Strength
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-sm mt-2">
-                          Your high score in Personal Growth indicates this is an area of strength. Consider these strategies to build on this foundation:
-                        </p>
-                        
-                        <ul className="mt-4 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              1
-                            </div>
-                            <span className="text-sm">Set more challenging growth goals</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              2
-                            </div>
-                            <span className="text-sm">Mentor others in their development journey</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              3
-                            </div>
-                            <span className="text-sm">Explore advanced opportunities in areas of interest</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Leveraging Your Strength in Environmental Mastery */}
-                  <div className="border border-slate-200 rounded-md">
-                    <div className="flex items-start p-4">
-                      <div className="mr-3 mt-0.5">
-                        <input type="checkbox" checked className="h-4 w-4" readOnly />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <Heart className="text-green-600 h-4 w-4" />
-                              <h3 className="font-semibold">Leveraging Your Strength in Environmental Mastery</h3>
-                            </div>
-                            <div className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-sm inline-block mt-1">
-                              Strength
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-sm mt-2">
-                          Your high score in Environmental Mastery indicates this is an area of strength. Consider these strategies to build on this foundation:
-                        </p>
-                        
-                        <ul className="mt-4 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              1
-                            </div>
-                            <span className="text-sm">Share your organizational techniques with peers</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              2
-                            </div>
-                            <span className="text-sm">Take on leadership roles that utilize this strength</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              3
-                            </div>
-                            <span className="text-sm">Apply your skills to increasingly complex challenges</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Leveraging Your Strength in Purpose in Life */}
-                  <div className="border border-slate-200 rounded-md">
-                    <div className="flex items-start p-4">
-                      <div className="mr-3 mt-0.5">
-                        <input type="checkbox" checked className="h-4 w-4" readOnly />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <Heart className="text-green-600 h-4 w-4" />
-                              <h3 className="font-semibold">Leveraging Your Strength in Purpose in Life</h3>
-                            </div>
-                            <div className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-sm inline-block mt-1">
-                              Strength
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        
-                        <p className="text-sm mt-2">
-                          Your high score in Purpose in Life indicates this is an area of strength. Consider these strategies to build on this foundation:
-                        </p>
-                        
-                        <ul className="mt-4 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              1
-                            </div>
-                            <span className="text-sm">Refine your long-term vision and goals</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              2
-                            </div>
-                            <span className="text-sm">Help others connect with their sense of purpose</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <div className="bg-green-100 text-green-600 rounded-full h-5 w-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                              3
-                            </div>
-                            <span className="text-sm">Explore how to align your purpose with career aspirations</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
+                <div className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-sm inline-block mb-3">
+                  Needs attention
                 </div>
-              </TabsContent>
-            </Tabs>
+                
+                <p className="text-slate-700 mb-4">
+                  Your score in Self-Acceptance indicates an opportunity for growth. These strategies can help strengthen this dimension:
+                </p>
+                
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <div className="bg-red-100 text-red-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      1
+                    </div>
+                    <span className="text-slate-700">Practice daily self-compassion exercises</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="bg-red-100 text-red-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      2
+                    </div>
+                    <span className="text-slate-700">Challenge negative self-talk with evidence-based alternatives</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="bg-red-100 text-red-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      3
+                    </div>
+                    <span className="text-slate-700">Create a list of your strengths and review it regularly</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Enhancing Positive Relations */}
+              <div className="border border-slate-200 rounded-md p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <BarChart className="text-amber-600 h-5 w-5" />
+                  <h3 className="font-semibold text-lg">Enhancing Positive Relations</h3>
+                </div>
+                <div className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-sm inline-block mb-3">
+                  Moderate
+                </div>
+                
+                <p className="text-slate-700 mb-4">
+                  Your score in Positive Relations shows a moderate level. These strategies can help strengthen this dimension further:
+                </p>
+                
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <div className="bg-amber-100 text-amber-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      1
+                    </div>
+                    <span className="text-slate-700">Deepen existing relationships through more meaningful conversations</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="bg-amber-100 text-amber-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      2
+                    </div>
+                    <span className="text-slate-700">Practice expressing appreciation to others regularly</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="bg-amber-100 text-amber-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      3
+                    </div>
+                    <span className="text-slate-700">Work on conflict resolution skills</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Leveraging Your Strength in Personal Growth */}
+              <div className="border border-slate-200 rounded-md p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart className="text-green-600 h-5 w-5" />
+                  <h3 className="font-semibold text-lg">Leveraging Your Strength in Personal Growth</h3>
+                </div>
+                <div className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-sm inline-block mb-3">
+                  Strength
+                </div>
+                
+                <p className="text-slate-700 mb-4">
+                  Your high score in Personal Growth indicates this is an area of strength. Consider these strategies to build on this foundation:
+                </p>
+                
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <div className="bg-green-100 text-green-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      1
+                    </div>
+                    <span className="text-slate-700">Set more challenging growth goals</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="bg-green-100 text-green-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      2
+                    </div>
+                    <span className="text-slate-700">Mentor others in their development journey</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="bg-green-100 text-green-600 rounded-full h-6 w-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                      3
+                    </div>
+                    <span className="text-slate-700">Explore advanced opportunities in areas of interest</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
+
+      {/* Add the dialog for adding new reflections */}
+      <Dialog open={showReflectionDialog} onOpenChange={setShowReflectionDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Dimension Reflection</DialogTitle>
+            <DialogDescription>
+              Record your thoughts and experiences related to a specific well-being dimension.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="reflectionDimension">Choose Dimension</Label>
+              <select
+                id="reflectionDimension"
+                value={reflectionDimension}
+                onChange={(e) => setReflectionDimension(e.target.value)}
+                className="w-full rounded-md border border-slate-300 p-2"
+              >
+                {dimensions.map((dim) => (
+                  <option key={dim} value={dim}>{dim}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reflectionMood">How are you feeling about this dimension?</Label>
+              <div className="flex gap-4 mt-2">
+                {["😔", "😐", "🙂", "😊", "😄"].map((mood) => (
+                  <button
+                    key={mood}
+                    type="button"
+                    onClick={() => setReflectionMood(mood)}
+                    className={`text-2xl p-2 rounded-full ${reflectionMood === mood ? "bg-blue-100" : ""}`}
+                  >
+                    {mood}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reflectionText">Your Reflection</Label>
+              <Textarea
+                id="reflectionText"
+                value={reflectionText}
+                onChange={(e) => setReflectionText(e.target.value)}
+                placeholder="Share your thoughts, challenges, or progress on this dimension..."
+                className="min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReflectionDialog(false)}>Cancel</Button>
+            <Button onClick={handleSubmitReflection}>Save Reflection</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add the dialog for adding new goals */}
+      <Dialog open={showGoalDialog} onOpenChange={setShowGoalDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Dimension Goal</DialogTitle>
+            <DialogDescription>
+              Create a new goal to improve a specific well-being dimension.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="goalDimension">Choose Dimension</Label>
+              <select
+                id="goalDimension"
+                value={goalDimension}
+                onChange={(e) => setGoalDimension(e.target.value)}
+                className="w-full rounded-md border border-slate-300 p-2"
+              >
+                {dimensions.map((dim) => (
+                  <option key={dim} value={dim}>{dim}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="goalTitle">Goal Description</Label>
+              <Input
+                id="goalTitle"
+                value={goalTitle}
+                onChange={(e) => setGoalTitle(e.target.value)}
+                placeholder="e.g., Practice mindfulness for 10 minutes daily"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="goalDueDate">Due Date</Label>
+              <div className="border rounded-md p-4">
+                <Calendar
+                  mode="single"
+                  selected={goalDueDate}
+                  onSelect={setGoalDueDate}
+                  initialFocus
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowGoalDialog(false)}>Cancel</Button>
+            <Button onClick={handleSubmitGoal}>Create Goal</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-  )
+  );
 } 

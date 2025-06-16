@@ -132,6 +132,10 @@ function DashboardContent() {
   const renderContent = () => {
     // For student role, only show student dashboard
     if (userRole === "student") {
+      // Special case: if the student is accessing settings
+      if (currentPage === "settings") {
+        return <Settings userRole="student" />;
+      }
       return <StudentDashboard onBack={handleBackToAdmin} currentPage={getStudentPage()} />
     }
     
@@ -146,6 +150,8 @@ function DashboardContent() {
           return <UserManagement />
         case "system-settings":
           return <SystemSettings />
+        case "settings":
+          return <Settings userRole="superadmin" />
         default:
           return <SuperAdminDashboard />
       }
@@ -166,7 +172,7 @@ function DashboardContent() {
       case "reports":
         return <Reports />
       case "settings":
-        return <Settings />
+        return <Settings userRole="counselor" />
       case "ai-feedback":
         // Get department from localStorage if it was set during navigation
         const selectedDepartment = typeof window !== 'undefined' ? localStorage.getItem("selectedDepartmentFilter") : null;
