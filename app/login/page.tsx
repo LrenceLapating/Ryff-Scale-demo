@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,8 @@ const MOCK_USERS = {
   superadmin: { email: "superadmin@example.com", password: "superadmin123" }
 }
 
-export default function LoginPage() {
+// Component to handle search params
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
@@ -67,6 +68,69 @@ export default function LoginPage() {
   }
 
   return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {successMessage && (
+        <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
+      )}
+      {error && (
+        <div className="p-3 text-sm bg-red-50 border border-red-200 text-red-600 rounded-md">
+          {error}
+        </div>
+      )}
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input 
+          id="email" 
+          type="email" 
+          placeholder="name@example.com" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Password</Label>
+          <Link 
+            href="/forgot-password" 
+            className="text-sm text-primary hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
+        <Input 
+          id="password" 
+          type="password" 
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="remember" 
+          checked={rememberMe}
+          onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+        />
+        <Label 
+          htmlFor="remember" 
+          className="text-sm font-normal cursor-pointer"
+        >
+          Remember me
+        </Label>
+      </div>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? "Signing in..." : "Sign in"}
+      </Button>
+    </form>
+  )
+}
+
+export default function LoginPage() {
+  return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
@@ -86,64 +150,9 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {successMessage && (
-                <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>{successMessage}</AlertDescription>
-                </Alert>
-              )}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <div className="p-3 text-sm bg-red-50 border border-red-200 text-red-600 rounded-md">
-                    {error}
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="name@example.com" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <Link 
-                      href="/forgot-password" 
-                      className="text-sm text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="remember" 
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                  />
-                  <Label 
-                    htmlFor="remember" 
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    Remember me
-                  </Label>
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Signing in..." : "Sign in"}
-                </Button>
-              </form>
+              <Suspense fallback={<div>Loading...</div>}>
+                <LoginForm />
+              </Suspense>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
               <div className="text-sm text-center text-gray-500">

@@ -65,7 +65,7 @@ const counselorNavigationItems: NavigationItem[] = [
     icon: Users,
   },
   {
-    title: "AI Feedback",
+    title: "Guidance Feedback",
     url: "/ai-feedback",
     icon: Brain,
   },
@@ -118,7 +118,7 @@ const studentNavigationItems: NavigationItem[] = [
     icon: FileText,
   },
   {
-    title: "AI Feedback",
+    title: "Guidance Feedback",
     url: "/feedback",
     icon: MessageSquare,
   }

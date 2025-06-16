@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import { DashboardOverview } from "@/components/dashboard-overview"
@@ -10,7 +10,7 @@ import { StatusMonitor } from "@/components/status-monitor"
 import { Reports } from "@/components/reports"
 import { Settings } from "@/components/settings"
 import { StudentDashboard } from "@/components/student-dashboard"
-import { AIFeedback } from "@/components/ai-feedback"
+import { GuidanceFeedback } from "@/components/ai-feedback"
 import { RyffScoring } from "@/components/ryff-scoring"
 import { Notifications } from "@/components/notifications"
 import { SuperAdminDashboard } from "@/components/super-admin-dashboard"
@@ -30,7 +30,8 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 
-export default function DashboardPage() {
+// Component that uses searchParams
+function DashboardContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const roleParam = searchParams?.get("role")
@@ -174,9 +175,9 @@ export default function DashboardPage() {
           localStorage.removeItem("selectedDepartmentFilter");
         }
         
-        console.log("Rendering AIFeedback with studentId:", selectedStudentId);
+        console.log("Rendering GuidanceFeedback with studentId:", selectedStudentId);
         
-        return <AIFeedback 
+        return <GuidanceFeedback 
           studentId={selectedStudentId} 
           department={selectedDepartment || undefined}
           onBack={() => setCurrentPage("dashboard")} 
@@ -188,7 +189,17 @@ export default function DashboardPage() {
 
   const getPageTitle = () => {
     if (userRole === "student") {
-      return "Student Dashboard"
+      switch (currentPage) {
+        case "assessment":
+        case "assessments":
+          return "Assessments"
+        case "results":
+          return "Assessment Results"
+        case "feedback":
+          return "Guidance Feedback"
+        default:
+          return "Student Portal"
+      }
     }
     
     if (userRole === "superadmin") {
@@ -222,7 +233,7 @@ export default function DashboardPage() {
       case "settings":
         return "Settings"
       case "ai-feedback":
-        return "AI Feedback Review"
+        return "Guidance Feedback"
       default:
         return "Dashboard"
     }
@@ -249,68 +260,101 @@ export default function DashboardPage() {
     }
     
     switch (currentPage) {
+      case "dashboard":
+        return ["Dashboard"]
       case "bulk-assignment":
+        return ["Dashboard", "Bulk Assignment"]
       case "auto-reminders":
+        return ["Dashboard", "Auto-Reminders"]
       case "scoring":
-        return ["Ryff Assessment", getPageTitle()]
+        return ["Dashboard", "Ryff Scoring"]
+      case "status":
+        return ["Dashboard", "Status Monitor"]
+      case "reports":
+        return ["Dashboard", "Reports"]
+      case "settings":
+        return ["Dashboard", "Settings"]
       case "ai-feedback":
-        return ["Admin", "AI Feedback Review"]
+        return ["Dashboard", "Guidance Feedback"]
       default:
-        return [getPageTitle()]
+        return ["Dashboard"]
     }
   }
 
   return (
     <SidebarProvider>
-      <AppSidebar 
-        onNavigate={handleNavigate} 
-        currentPage={currentPage} 
-        userRole={userRole}
-      />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#" onClick={() => handleNavigate("dashboard")} className="cursor-pointer">
-                    Ryff PWB System
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                {getBreadcrumbPath().map((item, index) => (
-                  <React.Fragment key={item}>
-                    <BreadcrumbSeparator className="hidden md:block" />
-                    <BreadcrumbItem>
-                      {index === getBreadcrumbPath().length - 1 ? (
-                        <BreadcrumbPage>{item}</BreadcrumbPage>
+      <div className="flex h-screen w-full">
+        {/* Sidebar */}
+        <AppSidebar 
+          currentPage={currentPage}
+          userRole={userRole}
+          onNavigate={handleNavigate}
+        />
+        
+        {/* Main content */}
+        <div className="flex-1 flex flex-col w-full overflow-auto">
+          {/* Top navigation */}
+          <header className="border-b p-4 flex justify-between items-center bg-white w-full">
+            <div>
+              <h1 className="text-2xl font-bold">{getPageTitle()}</h1>
+              <Breadcrumb className="mt-1">
+                <BreadcrumbList>
+                  {getBreadcrumbPath().map((item, index) => (
+                    <React.Fragment key={index}>
+                      {index < getBreadcrumbPath().length - 1 ? (
+                        <>
+                          <BreadcrumbItem>
+                            <BreadcrumbLink href="#">{item}</BreadcrumbLink>
+                          </BreadcrumbItem>
+                          <BreadcrumbSeparator />
+                        </>
                       ) : (
-                        <BreadcrumbLink href="#" className="cursor-pointer">
-                          {item}
-                        </BreadcrumbLink>
+                        <BreadcrumbItem>
+                          <BreadcrumbPage>{item}</BreadcrumbPage>
+                        </BreadcrumbItem>
                       )}
-                    </BreadcrumbItem>
-                  </React.Fragment>
-                ))}
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
+                    </React.Fragment>
+                  ))}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Notifications />
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign out
+              </Button>
+              <SidebarTrigger className="md:hidden" />
+            </div>
+          </header>
           
-          <div className="ml-auto flex items-center gap-4 mr-4">
-            {userRole === "admin" && (
-              <Notifications onViewFeedback={handleViewFeedback} />
-            )}
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="flex items-center gap-2">
-              <LogOut className="h-4 w-4" />
-              <span>Logout</span>
-            </Button>
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min p-6">{renderContent()}</div>
+          {/* Main content area */}
+          <main className="flex-1 p-6 overflow-auto bg-gray-50 w-full">
+            <SidebarInset className="md:hidden">
+              <div className="p-4">
+                {/* Mobile sidebar content */}
+                <h2 className="text-lg font-semibold mb-2">Menu</h2>
+                <Separator className="my-2" />
+                {/* Mobile navigation items would go here */}
+              </div>
+            </SidebarInset>
+            
+            {/* Page content */}
+            <div className="w-full">
+              {renderContent()}
+            </div>
+          </main>
         </div>
-      </SidebarInset>
+      </div>
     </SidebarProvider>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div>Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   )
 } 

@@ -695,13 +695,13 @@ interface DepartmentFeedback {
   trendInsights: string;
 }
 
-interface AIFeedbackProps {
+interface GuidanceFeedbackProps {
   studentId?: string;
   department?: string;
   onBack?: () => void;
 }
 
-export function AIFeedback({ studentId, department, onBack }: AIFeedbackProps) {
+export function GuidanceFeedback({ studentId, department, onBack }: GuidanceFeedbackProps) {
   const [selectedDepartment, setSelectedDepartment] = useState<string | undefined>(undefined)
   const [selectedRiskStudent, setSelectedRiskStudent] = useState<string | undefined>(undefined)
   const [viewMode, setViewMode] = useState<"departments" | "department" | "atRiskStudents" | "studentDetail">("departments")
