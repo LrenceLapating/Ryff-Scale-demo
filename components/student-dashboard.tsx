@@ -99,15 +99,8 @@ const mockAssessments = [
     status: "pending",
     dueDate: "2023-11-15",
     progress: 0,
-    description: "Comprehensive psychological well-being assessment based on Ryff's six dimensions model."
-  },
-  {
-    id: "2",
-    title: "Ryff Brief Scale (18-item)",
-    status: "completed",
-    completedDate: "2023-10-10",
-    progress: 100,
-    description: "Short-form assessment focusing on core aspects of psychological well-being."
+    description: "Comprehensive psychological well-being assessment based on Ryff's six dimensions model (42-item version).",
+    completedDate: ""
   },
   {
     id: "3",
@@ -115,25 +108,27 @@ const mockAssessments = [
     status: "pending",
     dueDate: "2023-11-22",
     progress: 0,
-    description: "Targeted assessment focusing on the Self-Acceptance dimension of well-being."
+    description: "Targeted assessment focusing on the Self-Acceptance dimension of well-being.",
+    completedDate: ""
   }
 ]
 
+// Add a result for the 42-item assessment
 const mockResults = [
   {
-    id: "2",
-    title: "Ryff Brief Scale (18-item)",
-    completedDate: "2023-10-10",
+    id: "1",
+    title: "Ryff PWB Assessment (42-item)",
+    completedDate: "2023-11-15",
     dimensions: [
-      { name: "Autonomy", score: 78 },
-      { name: "Environmental Mastery", score: 65 },
-      { name: "Personal Growth", score: 82 },
-      { name: "Positive Relations", score: 70 },
-      { name: "Purpose in Life", score: 75 },
-      { name: "Self-Acceptance", score: 48 },
+      { name: "Autonomy", score: 75 },
+      { name: "Environmental Mastery", score: 68 },
+      { name: "Personal Growth", score: 80 },
+      { name: "Positive Relations", score: 72 },
+      { name: "Purpose in Life", score: 78 },
+      { name: "Self-Acceptance", score: 55 },
     ],
-    overallScore: 70,
-    counselorNotes: "Your results show strong scores in Personal Growth and Autonomy. Consider focusing on improving Self-Acceptance through the recommended strategies in your intervention plan.",
+    overallScore: 71,
+    counselorNotes: "Your 42-item assessment results show strong scores in Personal Growth and Purpose in Life. Continue working on Self-Acceptance using the recommended exercises. Your overall psychological well-being score is in the healthy range.",
   }
 ]
 
@@ -201,6 +196,182 @@ const mockAssessmentQuestions = [
     id: "q10",
     text: "People would describe me as a giving person, willing to share my time with others.",
     dimension: "Positive Relations",
+  },
+  {
+    id: "q11",
+    text: "Some people wander aimlessly through life, but I am not one of them.",
+    dimension: "Purpose in Life",
+  },
+  {
+    id: "q12",
+    text: "I like most parts of my personality.",
+    dimension: "Self-Acceptance",
+  },
+  {
+    id: "q13",
+    text: "I judge myself by what I think is important, not by the values of what others think is important.",
+    dimension: "Autonomy",
+  },
+  {
+    id: "q14",
+    text: "I gave up trying to make big improvements or changes in my life a long time ago.",
+    dimension: "Personal Growth",
+    reversed: true,
+  },
+  {
+    id: "q15",
+    text: "I am quite good at managing the many responsibilities of my daily life.",
+    dimension: "Environmental Mastery",
+  },
+  {
+    id: "q16",
+    text: "I have not experienced many warm and trusting relationships with others.",
+    dimension: "Positive Relations",
+    reversed: true,
+  },
+  {
+    id: "q17",
+    text: "I have a sense of direction and purpose in life.",
+    dimension: "Purpose in Life",
+  },
+  {
+    id: "q18",
+    text: "In general, I feel confident and positive about myself.",
+    dimension: "Self-Acceptance",
+  },
+  {
+    id: "q19",
+    text: "I tend to be influenced by people with strong opinions.",
+    dimension: "Autonomy",
+    reversed: true,
+  },
+  {
+    id: "q20",
+    text: "I do not fit very well with the people and the community around me.",
+    dimension: "Environmental Mastery",
+    reversed: true,
+  },
+  {
+    id: "q21",
+    text: "I have the sense that I have developed a lot as a person over time.",
+    dimension: "Personal Growth",
+  },
+  {
+    id: "q22",
+    text: "I often feel lonely because I have few close friends with whom to share my concerns.",
+    dimension: "Positive Relations",
+    reversed: true,
+  },
+  {
+    id: "q23",
+    text: "I have been able to build a living environment and a lifestyle for myself that is much to my liking.",
+    dimension: "Environmental Mastery",
+  },
+  {
+    id: "q24",
+    text: "I tend to worry about what other people think of me.",
+    dimension: "Autonomy",
+    reversed: true,
+  },
+  {
+    id: "q25",
+    text: "I do not enjoy being in new situations that require me to change my old familiar ways of doing things.",
+    dimension: "Personal Growth",
+    reversed: true,
+  },
+  {
+    id: "q26",
+    text: "My daily activities often seem trivial and unimportant to me.",
+    dimension: "Purpose in Life",
+    reversed: true,
+  },
+  {
+    id: "q27",
+    text: "I know that I can trust my friends, and they know they can trust me.",
+    dimension: "Positive Relations",
+  },
+  {
+    id: "q28",
+    text: "When I think about it, I haven't really improved much as a person over the years.",
+    dimension: "Personal Growth",
+    reversed: true,
+  },
+  {
+    id: "q29",
+    text: "I don't have a good sense of what it is I'm trying to accomplish in life.",
+    dimension: "Purpose in Life",
+    reversed: true,
+  },
+  {
+    id: "q30",
+    text: "I made some mistakes in the past, but I feel that all in all everything has worked out for the best.",
+    dimension: "Self-Acceptance",
+  },
+  {
+    id: "q31",
+    text: "I have confidence in my opinions, even if they are contrary to the general consensus.",
+    dimension: "Autonomy",
+  },
+  {
+    id: "q32",
+    text: "I generally do a good job of taking care of my personal finances and affairs.",
+    dimension: "Environmental Mastery",
+  },
+  {
+    id: "q33",
+    text: "I used to set goals for myself, but that now seems like a waste of time.",
+    dimension: "Purpose in Life",
+    reversed: true,
+  },
+  {
+    id: "q34",
+    text: "I feel like many of the people I know have gotten more out of life than I have.",
+    dimension: "Self-Acceptance",
+    reversed: true,
+  },
+  {
+    id: "q35",
+    text: "I have difficulty arranging my life in a way that is satisfying to me.",
+    dimension: "Environmental Mastery",
+    reversed: true,
+  },
+  {
+    id: "q36",
+    text: "I enjoy personal and mutual conversations with family members or friends.",
+    dimension: "Positive Relations",
+  },
+  {
+    id: "q37",
+    text: "I enjoy making plans for the future and working to make them a reality.",
+    dimension: "Purpose in Life",
+  },
+  {
+    id: "q38",
+    text: "In many ways, I feel disappointed about my achievements in life.",
+    dimension: "Self-Acceptance",
+    reversed: true,
+  },
+  {
+    id: "q39",
+    text: "It's difficult for me to voice my own opinions on controversial matters.",
+    dimension: "Autonomy",
+    reversed: true,
+  },
+  {
+    id: "q40",
+    text: "I am good at juggling my time so that I can fit everything in that needs to be done.",
+    dimension: "Environmental Mastery",
+  },
+  {
+    id: "q41",
+    text: "I have a sense that I have developed a lot as a person over time.",
+    dimension: "Personal Growth",
+  },
+  {
+    id: "q42",
+    text: "I often feel overwhelmed by my responsibilities.",
+    dimension: "Environmental Mastery",
+    reversed: true,
   },
 ]
 
@@ -446,6 +617,12 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
         : assessment
     )
     
+    // Add the 42-item assessment to mockResults42 if it doesn't exist yet
+    if (!mockResults.some(result => result.id === activeAssessment)) {
+      // In a real app, this would be calculated from the actual answers
+      // For now, we'll just use the pre-defined mock result
+    }
+    
     // Show completion screen
     setShowCompletionScreen(true)
     
@@ -526,7 +703,14 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              <div className="text-lg font-medium text-slate-800">{currentQuestion.text}</div>
+              <div className="bg-blue-50 p-4 rounded-md mb-4">
+                <h3 className="font-medium mb-2">Instructions:</h3>
+                <p>Circle one response below each statement to indicate how much you agree or disagree.</p>
+                <p className="mt-2 font-medium">
+                  1 = strongly disagree; 2 = disagree; 3 = somewhat disagree; 4 = somewhat agree; 5 = agree; 6 = strongly agree
+                </p>
+              </div>
+              <div className="text-lg font-medium text-slate-800">{currentQuestionIndex + 1}. {currentQuestion.text}</div>
               
               <RadioGroup 
                 value={answers[currentQuestion.id]?.toString() || ""} 
@@ -607,7 +791,7 @@ export function StudentDashboard({ onBack, currentPage }: StudentDashboardProps)
           
           <div className="space-y-3">
             <h1 className="text-3xl font-bold text-slate-900">Assessment Completed!</h1>
-            <p className="text-xl text-slate-600">Thank you for completing your well-being assessment</p>
+            <p className="text-xl text-slate-600">Thank you for completing the 42-item Ryff Psychological Well-being Assessment</p>
           </div>
           
           <div className="bg-slate-50 rounded-lg p-6 w-full max-w-lg border border-slate-200">
